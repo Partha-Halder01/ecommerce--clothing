@@ -1,0 +1,238 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Inyou Luxury Perfume Color Palette (V2) */
+  /* #FCFBF8 - Soft Pearl (background) */
+  /* #1C1615 - Espresso Dark (text/primary) */
+  /* #D8B4A0 - Soft Rose Gold / Blush (accent) */
+  /* #E5E0D8 - Warm Beige (secondary background) */
+
+  --background: #fcfbf8;
+  --foreground: #1c1615;
+  --card: #ffffff;
+  --card-foreground: #1c1615;
+  --popover: #ffffff;
+  --popover-foreground: #1c1615;
+  --primary: #1c1615;
+  --primary-foreground: #fcfbf8;
+  --secondary: #e5e0d8;
+  --secondary-foreground: #1c1615;
+  --muted: #f4f1eb;
+  --muted-foreground: #6b635e;
+  --accent: #d8b4a0;
+  --accent-foreground: #1c1615;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #e8e3dc;
+  --input: #f4f1eb;
+  --ring: #d8b4a0;
+
+  /* Custom Inyou brand colors */
+  --brand-light: #fcfbf8;
+  --brand-gold: #d8b4a0;
+  --brand-primary: #1c1615;
+  --brand-dark: #14100f;
+  --brand-black: #1c1615;
+
+  --chart-1: #1c1615;
+  --chart-2: #d8b4a0;
+  --chart-3: #e5e0d8;
+  --chart-4: #8c7a72;
+  --chart-5: #fcfbf8;
+  --radius: 0.25rem; /* Slight soft radius for ethereal feel */
+  --sidebar: #fdfdfd;
+  --sidebar-foreground: #0a0a0a;
+  --sidebar-primary: #000000;
+  --sidebar-primary-foreground: #fdfdfd;
+  --sidebar-accent: #d4af37;
+  --sidebar-accent-foreground: #0a0a0a;
+  --sidebar-border: #e5e5e5;
+  --sidebar-ring: #d4af37;
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #fdfdfd;
+  --card: #141414;
+  --card-foreground: #fdfdfd;
+  --popover: #141414;
+  --popover-foreground: #fdfdfd;
+  --primary: #d4af37;
+  --primary-foreground: #0a0a0a;
+  --secondary: #1a1a1a;
+  --secondary-foreground: #fdfdfd;
+  --muted: #1a1a1a;
+  --muted-foreground: #a3a3a3;
+  --accent: #d4af37;
+  --accent-foreground: #0a0a0a;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #1a1a1a;
+  --input: #1a1a1a;
+  --ring: #d4af37;
+  --sidebar: #0a0a0a;
+  --sidebar-foreground: #fdfdfd;
+  --sidebar-primary: #d4af37;
+  --sidebar-primary-foreground: #0a0a0a;
+  --sidebar-accent: #1a1a1a;
+  --sidebar-accent-foreground: #fdfdfd;
+  --sidebar-border: #1a1a1a;
+  --sidebar-ring: #d4af37;
+}
+
+@theme inline {
+  --font-sans: "Montserrat", sans-serif;
+  --font-mono: "Geist Mono", "Geist Mono Fallback";
+  --font-body: "Montserrat", sans-serif;
+  --font-playfair: "Cormorant Garamond", serif;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-brand-light: var(--brand-light);
+  --color-brand-medium: var(--brand-medium);
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-dark: var(--brand-dark);
+  --color-brand-navy: var(--brand-navy);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar with Sapphire theme */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--muted);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--brand-medium);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-primary);
+}
+
+/* Marquee animation */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
+/* Scroll indicator animation */
+@keyframes scroll-hand {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(10px);
+  }
+}
+
+.animate-scroll-hand {
+  animation: scroll-hand 1.5s ease-in-out infinite;
+}
+
+/* Product carousel */
+@keyframes slide-left {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-slide-left {
+  animation: slide-left 25s linear infinite;
+}
+
+/* Fade in animation */
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out forwards;
+}
+
+/* Pulse animation for sale timer */
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(46, 94, 153, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 20px 5px rgba(46, 94, 153, 0.2);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
