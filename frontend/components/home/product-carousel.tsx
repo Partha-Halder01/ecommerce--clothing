@@ -119,6 +119,8 @@ export function ProductCarousel() {
                       src={product.image_url || "/placeholder.svg"}
                       alt={product.name}
                       fill
+                      loading="lazy"
+                      sizes="(max-width: 640px) 75vw, (max-width: 1024px) 40vw, 25vw"
                       className="object-cover transition-all duration-[1.2s] ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100"
                     />
                     {/* Shimmer borders on hover */}

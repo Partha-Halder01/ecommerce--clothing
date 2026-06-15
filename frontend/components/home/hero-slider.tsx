@@ -83,6 +83,8 @@ export function HeroSlider() {
             <img
               src={slides[currentSlide]?.image}
               alt={slides[currentSlide]?.title}
+              fetchPriority="high"
+              decoding="async"
               className="w-full h-full object-cover object-center brightness-90 saturate-50 transition-transform duration-[10s] ease-out hover:scale-105"
             />
           </motion.div>

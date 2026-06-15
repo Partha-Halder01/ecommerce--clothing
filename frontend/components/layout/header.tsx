@@ -128,13 +128,8 @@ export function Header() {
           </button>
 
           {/* Center Logo */}
-          <Link href="/" className="absolute left-1/2 -translate-x-1/2">
-            <span
-              className="text-xl sm:text-2xl font-bold tracking-[0.15em] uppercase text-[#FCFBF8]"
-              style={{ fontFamily: "var(--font-playfair)" }}
-            >
-              Inyou
-            </span>
+          <Link href="/" className="absolute left-1/2 -translate-x-1/2 flex items-center">
+            <img src="/logo-light.png" alt="In You" className="h-10 sm:h-12 w-auto object-contain" />
           </Link>
 
           {/* Right Icons */}
@@ -180,9 +175,7 @@ export function Header() {
               {/* Mobile Header */}
               <div className="flex items-center justify-between p-6 border-b border-[#D8B4A0]/10">
                 <Link href="/" onClick={() => setMobileOpen(false)}>
-                  <span className="text-2xl font-bold tracking-[0.15em] uppercase text-[#FCFBF8]" style={{ fontFamily: "var(--font-playfair)" }}>
-                    Inyou
-                  </span>
+                  <img src="/logo-light.png" alt="In You" className="h-11 w-auto object-contain" />
                 </Link>
                 <button
                   onClick={() => setMobileOpen(false)}

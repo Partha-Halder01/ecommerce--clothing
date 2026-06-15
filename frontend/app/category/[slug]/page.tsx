@@ -109,24 +109,11 @@ export default function CategoryProductsPage() {
             <SaleTimer />
             <Header />
 
-            {/* Breadcrumb */}
-            <div className="bg-[#FCFBF8] border-b border-[#D8B4A0]/20">
-                <div className="container mx-auto px-4 py-3">
-                    <nav className="flex items-center gap-2 text-xs uppercase tracking-[0.2em]">
-                        <Link href="/" className="text-[#D8B4A0] hover:text-[#1C1615] transition-colors" style={{ fontFamily: "var(--font-body)" }}>Home</Link>
-                        <ChevronRight className="w-3 h-3 text-[#D8B4A0]/50" />
-                        <Link href="/categories" className="text-[#D8B4A0] hover:text-[#1C1615] transition-colors" style={{ fontFamily: "var(--font-body)" }}>Categories</Link>
-                        <ChevronRight className="w-3 h-3 text-[#D8B4A0]/50" />
-                        <span className="text-[#1C1615] font-semibold" style={{ fontFamily: "var(--font-body)" }}>{category?.name || ""}</span>
-                    </nav>
-                </div>
-            </div>
-
-            {/* Category Hero Banner */}
-            <section className="relative h-[28vh] sm:h-[35vh] overflow-hidden bg-[#1C1615]">
+            {/* Category Hero Banner with breadcrumb overlay */}
+            <section className="relative h-[42vh] sm:h-[48vh] min-h-[340px] overflow-hidden bg-[#1C1615]">
                 <div className="absolute inset-0 opacity-40 mix-blend-luminosity">
                     {category?.image_url ? (
-                        <Image src={category.image_url} alt={category?.name || ""} fill className="object-cover object-center" />
+                        <Image src={category.image_url} alt={category?.name || ""} fill priority sizes="100vw" className="object-cover object-center" />
                     ) : (
                         <img
                             src="https://images.unsplash.com/photo-1594035910387-fea47794261f?q=80&w=2000&auto=format&fit=crop"
@@ -135,8 +122,21 @@ export default function CategoryProductsPage() {
                         />
                     )}
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-b from-[#1C1615]/80 via-[#1C1615]/40 to-[#1C1615]/90" />
-                <div className="relative h-full container mx-auto px-4 flex flex-col items-center justify-center text-center">
+                <div className="absolute inset-0 bg-gradient-to-b from-[#1C1615]/70 via-[#1C1615]/40 to-[#1C1615]/95" />
+
+                {/* Breadcrumb overlaid at the top */}
+                <div className="relative z-10 container mx-auto px-4 lg:px-8 pt-5 sm:pt-6">
+                    <nav className="flex items-center gap-2 text-[10px] sm:text-xs uppercase tracking-[0.2em]">
+                        <Link href="/" className="text-[#FCFBF8]/60 hover:text-[#D8B4A0] transition-colors" style={{ fontFamily: "var(--font-body)" }}>Home</Link>
+                        <ChevronRight className="w-3 h-3 text-[#FCFBF8]/30" />
+                        <Link href="/categories" className="text-[#FCFBF8]/60 hover:text-[#D8B4A0] transition-colors" style={{ fontFamily: "var(--font-body)" }}>Categories</Link>
+                        <ChevronRight className="w-3 h-3 text-[#FCFBF8]/30" />
+                        <span className="text-[#D8B4A0] font-semibold" style={{ fontFamily: "var(--font-body)" }}>{category?.name || ""}</span>
+                    </nav>
+                </div>
+
+                {/* Centered title */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: "easeOut" }}>
                         <h1 className="text-3xl sm:text-4xl lg:text-6xl font-light mb-3 text-[#FCFBF8] tracking-widest uppercase" style={{ fontFamily: "var(--font-playfair)" }}>
                             {category?.name || ""}
@@ -224,6 +224,8 @@ export default function CategoryProductsPage() {
                                                         src={product.image_url || "/placeholder.svg"}
                                                         alt={product.name}
                                                         fill
+                                                        loading="lazy"
+                                                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
                                                         className="object-cover transition-all duration-[1.2s] ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100"
                                                     />
                                                     {/* Gradient overlay */}

@@ -72,7 +72,16 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Configuration
-JWT_SECRET = os.getenv('JWT_SECRET', 'your-super-secret-jwt-key-change-in-production')
+JWT_SECRET = os.getenv('JWT_SECRET')
+if not JWT_SECRET:
+    # Refuse to start with a weak/guessable signing key. A predictable secret
+    # would let anyone forge JWTs (including admin tokens). Set JWT_SECRET in
+    # the backend .env to a long random string, e.g.
+    #   python -c "import secrets; print(secrets.token_urlsafe(64))"
+    raise RuntimeError(
+        "JWT_SECRET environment variable is not set. "
+        "Generate a strong random value and add it to backend/.env before starting the server."
+    )
 JWT_EXPIRY_HOURS = 24
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB max file size for video uploads
 
@@ -726,27 +735,31 @@ def create_new_order():
                 # Check if user exists
                 existing_user = find_user_by_email(email)
                 if existing_user:
+                    # Link the order to the existing account, but NEVER mint an
+                    # auth token for an account we did not just create. Otherwise
+                    # an unauthenticated request could obtain a valid token for any
+                    # user (including an admin) simply by placing an order with
+                    # their email address.
                     customer_id = existing_user['id']
-                    user = existing_user
                 else:
                     # Create new user account with random password
                     import secrets
                     temp_password = secrets.token_urlsafe(12)
-                    
+
                     from database import execute_query
                     import bcrypt
                     password_hash = bcrypt.hashpw(temp_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-                    
+
                     query = """
                         INSERT INTO users (first_name, last_name, email, password_hash, phone, is_verified)
                         VALUES (%s, %s, %s, %s, %s, TRUE)
                     """
                     customer_id = execute_query(query, (first_name, last_name, email, password_hash, phone))
                     user = find_user_by_id(customer_id)
-                
-                # Generate token for auto-login
-                if user:
-                    access_token = generate_token(user['id'])
+
+                    # Auto-login only the freshly created guest account.
+                    if user:
+                        access_token = generate_token(user['id'])
         
         # Create the order
         order_id = create_order(
@@ -2133,4 +2146,7 @@ if __name__ == '__main__':
     print("   - GET/PUT /api/admin/orders")
     print("   - GET  /api/admin/customers")
     
-    app.run(host='0.0.0.0', port=8000, debug=True)
+    # Never enable the interactive debugger in production (RCE risk + stack
+    # trace disclosure). Opt in locally with FLASK_DEBUG=true.
+    debug_mode = os.getenv('FLASK_DEBUG', 'false').lower() == 'true'
+    app.run(host='0.0.0.0', port=8000, debug=debug_mode)

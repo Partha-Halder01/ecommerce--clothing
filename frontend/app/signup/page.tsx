@@ -145,7 +145,7 @@ export default function SignupPage() {
         <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="w-full max-w-md">
           <motion.div variants={fadeInUp}>
             <Link href="/" className="inline-block mb-8 sm:mb-12">
-              <h1 className="text-3xl font-bold tracking-[0.3em] text-[#1C1615] uppercase" style={{ fontFamily: "var(--font-playfair)" }}>Inyou</h1>
+              <img src="/logo-dark.png" alt="In You" className="h-16 sm:h-20 w-auto object-contain" />
             </Link>
           </motion.div>
 

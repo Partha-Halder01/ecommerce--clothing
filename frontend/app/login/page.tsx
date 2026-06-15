@@ -29,7 +29,8 @@ export default function LoginPage() {
       const response = await authAPI.login({ email, password })
       toast({ title: "Success", description: "Logged in successfully!" })
       window.dispatchEvent(new Event('storage'))
-      if (response.user.is_admin) router.push("/admin/dashboard")
+      // Admins sign in through the dedicated /admin/login portal, not here.
+      if (response.user.is_admin) router.push("/admin/login")
       else router.push("/")
     } catch (error: any) {
       toast({ title: "Error", description: error.message || "Failed to login", variant: "destructive" })
@@ -71,7 +72,8 @@ export default function LoginPage() {
       localStorage.setItem('user', JSON.stringify(data.user))
       window.dispatchEvent(new Event('storage'))
       toast({ title: "Success", description: "Logged in successfully!" })
-      if (data.user.is_admin) router.push("/admin/dashboard")
+      // Admins sign in through the dedicated /admin/login portal, not here.
+      if (data.user.is_admin) router.push("/admin/login")
       else router.push("/")
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" })
@@ -110,7 +112,7 @@ export default function LoginPage() {
         <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="w-full max-w-md">
           <motion.div variants={fadeInUp}>
             <Link href="/" className="inline-block mb-8 sm:mb-12">
-              <h1 className="text-3xl font-bold tracking-[0.3em] text-[#1C1615] uppercase" style={{ fontFamily: "var(--font-playfair)" }}>Inyou</h1>
+              <img src="/logo-dark.png" alt="In You" className="h-16 sm:h-20 w-auto object-contain" />
             </Link>
           </motion.div>
 

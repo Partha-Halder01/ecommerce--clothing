@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
+import { Rocket, X } from "lucide-react"
 import { shiprocketAPI, getCurrentUser } from "@/lib/api"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -10,6 +12,7 @@ import { Input } from "@/components/ui/input"
 export default function ShiprocketAdminPage() {
   const router = useRouter()
   const [allowed, setAllowed] = useState(false)
+  const [showComingSoon, setShowComingSoon] = useState(true)
 
   useEffect(() => {
     const u = getCurrentUser()
@@ -52,7 +55,55 @@ export default function ShiprocketAdminPage() {
   if (!allowed) return null
 
   return (
-    <div className="p-6 lg:p-8 space-y-8">
+    <div className="relative">
+      {/* Coming Soon overlay */}
+      {showComingSoon && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-[#1C1615]/60 backdrop-blur-sm"
+            onClick={() => setShowComingSoon(false)}
+          />
+          <div className="relative z-10 w-full max-w-md bg-white border border-[#E8E3DC] shadow-2xl p-8 sm:p-10 text-center">
+            <button
+              onClick={() => setShowComingSoon(false)}
+              className="absolute top-4 right-4 text-[#6B635E] hover:text-[#1C1615] transition-colors"
+              aria-label="Close"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <div className="w-16 h-16 mx-auto mb-6 bg-[#F4F1EB] border border-[#E8E3DC] rounded-full flex items-center justify-center">
+              <Rocket className="h-7 w-7 text-[#D8B4A0]" />
+            </div>
+            <p className="text-[11px] uppercase tracking-[0.4em] text-[#D8B4A0] mb-3 font-semibold" style={{ fontFamily: "var(--font-body)" }}>
+              In You · Logistics
+            </p>
+            <h2 className="text-2xl sm:text-3xl font-light text-[#1C1615] uppercase tracking-wide mb-4" style={{ fontFamily: "var(--font-playfair)" }}>
+              Coming Soon
+            </h2>
+            <p className="text-[#6B635E] leading-relaxed tracking-wide mb-8" style={{ fontFamily: "var(--font-body)" }}>
+              The Shiprocket integration is being polished and will be available shortly. Thank you for your patience.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link
+                href="/admin/dashboard"
+                className="px-6 py-3 bg-[#1C1615] text-[#FCFBF8] text-[11px] font-bold tracking-[0.2em] uppercase hover:bg-[#D8B4A0] hover:text-[#1C1615] transition-all duration-300"
+                style={{ fontFamily: "var(--font-body)" }}
+              >
+                Back to Dashboard
+              </Link>
+              <button
+                onClick={() => setShowComingSoon(false)}
+                className="px-6 py-3 border border-[#E8E3DC] text-[#1C1615] text-[11px] font-bold tracking-[0.2em] uppercase hover:border-[#D8B4A0] transition-all duration-300"
+                style={{ fontFamily: "var(--font-body)" }}
+              >
+                Preview Page
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className={`p-6 lg:p-8 space-y-8 ${showComingSoon ? "blur-sm pointer-events-none select-none" : ""}`}>
       <div className="flex items-center justify-between">
         <h1 className="text-2xl sm:text-3xl font-light text-[#1C1615] uppercase tracking-widest" style={{ fontFamily: "var(--font-playfair)" }}>Shiprocket</h1>
       </div>
@@ -132,6 +183,7 @@ export default function ShiprocketAdminPage() {
           }}>Cancel</Button>
         </CardContent>
       </Card>
+      </div>
     </div>
   )
 }

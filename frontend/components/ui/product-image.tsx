@@ -10,9 +10,10 @@ interface ProductImageProps {
     height?: number
     className?: string
     priority?: boolean
+    sizes?: string
 }
 
-export function ProductImage({ src, alt, fill, width, height, className = "", priority = false }: ProductImageProps) {
+export function ProductImage({ src, alt, fill, width, height, className = "", priority = false, sizes }: ProductImageProps) {
     return (
         <div className={`relative ${fill ? 'w-full h-full' : ''}`}>
             <Image
@@ -23,12 +24,14 @@ export function ProductImage({ src, alt, fill, width, height, className = "", pr
                 height={!fill ? height : undefined}
                 className={className}
                 priority={priority}
+                loading={priority ? undefined : "lazy"}
+                sizes={fill ? (sizes || "(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw") : undefined}
             />
             {/* Watermark */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <span className="text-white/20 text-xs sm:text-sm font-bold tracking-widest uppercase select-none"
                     style={{ textShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
-                    Vurel
+                    In You
                 </span>
             </div>
         </div>

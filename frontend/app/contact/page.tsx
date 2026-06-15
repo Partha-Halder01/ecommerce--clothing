@@ -210,9 +210,9 @@ export default function ContactPage() {
 
                 <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-8">
                   {[
-                    { icon: Mail, label: "Email Correspondance", value: "concierge@inyou.luxury" },
-                    { icon: Phone, label: "Direct Line", value: "+91 82186 20557 / +91 90452 11333" },
-                    { icon: MapPin, label: "Boutique Location", value: "Mumbai, India" },
+                    { icon: Mail, label: "Email Correspondance", value: "support@inyoufragrances.com" },
+                    { icon: Phone, label: "Direct Line", value: "+91 99992 73927" },
+                    { icon: MapPin, label: "Boutique Location", value: "Delhi, India" },
                     { icon: Clock, label: "Operating Hours", value: "Mon - Sat: 10am - 7pm IST" },
                   ].map((item, index) => (
                     <motion.div variants={fadeIn} key={index} className="flex items-start gap-5">

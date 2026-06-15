@@ -277,7 +277,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
               className="space-y-3 sm:space-y-4 lg:sticky lg:top-24"
             >
               <div className="relative aspect-[3/4] lg:aspect-[4/5] max-w-lg mx-auto overflow-hidden bg-[#1C1615]/5 group/img border border-[#D8B4A0]/10 hover:border-[#D8B4A0]/40 transition-all duration-700">
-                <Image src={productImages[selectedImage] || "/placeholder.svg"} alt={product.name} fill className="object-cover transition-transform duration-[1.5s] group-hover/img:scale-105" />
+                <Image src={productImages[selectedImage] || "/placeholder.svg"} alt={product.name} fill priority sizes="(max-width: 1024px) 100vw, 45vw" className="object-cover transition-transform duration-[1.5s] group-hover/img:scale-105" />
                 {/* Corner accents */}
                 <div className="absolute top-0 left-0 w-8 h-[1px] bg-[#D8B4A0]/40" />
                 <div className="absolute top-0 left-0 w-[1px] h-8 bg-[#D8B4A0]/40" />
@@ -296,7 +296,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                       whileTap={{ scale: 0.95 }}
                       key={index} onClick={() => setSelectedImage(index)}
                       className={`relative aspect-square overflow-hidden bg-[#FCFBF8] ${selectedImage === index ? "ring-2 ring-[#D8B4A0]" : "ring-1 ring-[#D8B4A0]/20 hover:ring-[#D8B4A0]/50"} transition-all duration-300`}>
-                      <Image src={image || "/placeholder.svg"} alt={`${product.name} ${index + 1}`} fill className="object-contain" />
+                      <Image src={image || "/placeholder.svg"} alt={`${product.name} ${index + 1}`} fill loading="lazy" sizes="(max-width: 1024px) 22vw, 110px" className="object-contain" />
                       {/* Watermark */}
                       <div className="absolute bottom-1 left-1 pointer-events-none">
                         <span className="text-[#FCFBF8]/50 text-[8px] font-bold tracking-widest uppercase select-none" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>Inyou</span>

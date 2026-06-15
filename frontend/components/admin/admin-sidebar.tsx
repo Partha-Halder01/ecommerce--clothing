@@ -33,7 +33,7 @@ export function AdminSidebar() {
 
   const handleLogout = () => {
     authAPI.logout()
-    router.push("/")
+    router.push("/admin/login")
   }
 
   return (
@@ -41,7 +41,7 @@ export function AdminSidebar() {
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-black text-white p-4 flex items-center justify-between border-b border-white/10">
         <Link href="/admin/dashboard">
-          <h1 className="text-xl font-bold tracking-tighter uppercase text-[#D4AF37]" style={{ fontFamily: "var(--font-playfair)" }}>Inyou</h1>
+          <img src="/logo-light.png" alt="In You" className="h-9 w-auto object-contain" />
         </Link>
         <Button variant="ghost" size="icon" onClick={() => setIsMobileOpen(!isMobileOpen)} className="text-white hover:bg-white/10">
           {isMobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -55,8 +55,8 @@ export function AdminSidebar() {
       <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-black text-white flex flex-col transform transition-transform duration-300 ${isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"} pt-16 lg:pt-0 border-r border-white/10 shadow-2xl`}>
         <div className="hidden lg:block p-8 border-b border-white/10">
           <Link href="/admin/dashboard">
-            <h1 className="text-2xl font-bold tracking-tighter uppercase text-[#D4AF37]" style={{ fontFamily: "var(--font-playfair)" }}>Inyou</h1>
-            <p className="text-[10px] uppercase tracking-widest text-white/40 mt-1" style={{ fontFamily: "var(--font-body)" }}>Administrative Suite</p>
+            <img src="/logo-light.png" alt="In You" className="h-12 w-auto object-contain" />
+            <p className="text-[10px] uppercase tracking-widest text-white/40 mt-2" style={{ fontFamily: "var(--font-body)" }}>Administrative Suite</p>
           </Link>
         </div>
 

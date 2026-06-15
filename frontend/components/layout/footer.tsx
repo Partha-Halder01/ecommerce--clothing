@@ -50,18 +50,22 @@ export function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
           {/* Brand */}
           <div className="col-span-2 md:col-span-2 lg:col-span-1 space-y-6">
-            <span className="text-2xl font-bold tracking-[0.15em] uppercase" style={{ fontFamily: "var(--font-playfair)" }}>Inyou</span>
+            <img src="/logo-light.png" alt="In You" className="h-16 w-auto object-contain" />
             <p className="text-[13px] text-[#FCFBF8]/40 leading-relaxed max-w-xs tracking-wide" style={{ fontFamily: "var(--font-body)" }}>
               The essence of your presence. Luxury perfumes crafted for the modern individual.
             </p>
             <div className="space-y-3 text-[#FCFBF8]/40 text-xs" style={{ fontFamily: "var(--font-body)" }}>
               <div className="flex items-center gap-3">
                 <Mail className="h-3.5 w-3.5 text-[#D8B4A0]/60 flex-shrink-0" />
-                <span className="tracking-wide">hello@inyou.in</span>
+                <a href="mailto:support@inyoufragrances.com" className="tracking-wide hover:text-[#D8B4A0] transition-colors duration-300">support@inyoufragrances.com</a>
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="h-3.5 w-3.5 text-[#D8B4A0]/60 flex-shrink-0" />
-                <span className="tracking-wide">+91 900 000 0000</span>
+                <a href="tel:+919999273927" className="tracking-wide hover:text-[#D8B4A0] transition-colors duration-300">+91 99992 73927</a>
+              </div>
+              <div className="flex items-start gap-3">
+                <MapPin className="h-3.5 w-3.5 text-[#D8B4A0]/60 flex-shrink-0 mt-0.5" />
+                <span className="tracking-wide">Delhi, India</span>
               </div>
             </div>
           </div>
@@ -142,7 +146,7 @@ export function Footer() {
       <div className="border-t border-[#D8B4A0]/10">
         <div className="container mx-auto px-4 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-[10px] text-[#FCFBF8]/20 tracking-[0.2em] uppercase" style={{ fontFamily: "var(--font-body)" }}>
-            © {new Date().getFullYear()} Inyou Perfumes. All rights reserved.
+            © {new Date().getFullYear()} Vayuroma Fragrances (OPC) Pvt Ltd. All rights reserved.
           </p>
           <div className="flex items-center gap-1">
             <div className="h-px w-8 bg-gradient-to-r from-transparent via-[#D8B4A0]/30 to-transparent" />
