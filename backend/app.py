@@ -1263,6 +1263,27 @@ def admin_update_order(current_user, order_id):
 
 # ==================== FILE UPLOAD (CLOUDINARY) ====================
 
+import uuid as _uuid
+
+# Local storage fallback (used when Cloudinary is not configured)
+UPLOAD_DIR = os.getenv('UPLOAD_DIR', '/var/www/inyou/uploads')
+PUBLIC_UPLOAD_URL = os.getenv('PUBLIC_UPLOAD_URL', 'https://inyou.shop')
+
+
+def _cloudinary_configured():
+    return bool(os.getenv('CLOUDINARY_CLOUD_NAME') and os.getenv('CLOUDINARY_API_KEY') and os.getenv('CLOUDINARY_API_SECRET'))
+
+
+def _save_upload_local(file, subfolder):
+    """Save an uploaded file to local disk and return a public URL."""
+    ext = os.path.splitext(file.filename or '')[1].lower() or '.bin'
+    fname = f"{_uuid.uuid4().hex}{ext}"
+    folder = os.path.join(UPLOAD_DIR, subfolder)
+    os.makedirs(folder, exist_ok=True)
+    file.save(os.path.join(folder, fname))
+    return {'url': f"{PUBLIC_UPLOAD_URL}/uploads/{subfolder}/{fname}", 'public_id': f"{subfolder}/{fname}"}
+
+
 @app.route('/api/upload/image', methods=['POST'])
 @token_required
 @admin_required
@@ -1276,6 +1297,9 @@ def upload_image(current_user):
         if file.filename == '':
             return jsonify({'detail': 'No file selected'}), 400
         
+        if not _cloudinary_configured():
+            return jsonify(_save_upload_local(file, 'products')), 201
+
         # Upload to Cloudinary with optimization
         # quality: 90 for crystal clear images, auto format for best compression
         result = cloudinary.uploader.upload(
@@ -1288,7 +1312,7 @@ def upload_image(current_user):
                 {"flags": "preserve_transparency"}
             ]
         )
-        
+
         return jsonify({
             'url': result['secure_url'],
             'public_id': result['public_id'],
@@ -1316,6 +1340,9 @@ def upload_gallery_images(current_user):
         uploaded_urls = []
         for file in files:
             if file.filename:
+                if not _cloudinary_configured():
+                    uploaded_urls.append(_save_upload_local(file, 'gallery'))
+                    continue
                 result = cloudinary.uploader.upload(
                     file,
                     folder="ecommerce/gallery",
@@ -1351,7 +1378,10 @@ def upload_video(current_user):
             return jsonify({'detail': 'No file selected'}), 400
         
         print(f"Video upload started: {file.filename}")
-        
+
+        if not _cloudinary_configured():
+            return jsonify(_save_upload_local(file, 'videos')), 201
+
         # Simple video upload without complex transformations
         result = cloudinary.uploader.upload(
             file,
