@@ -126,6 +126,7 @@ def init_database():
                 is_featured BOOLEAN DEFAULT FALSE,
                 faqs JSON,
                 related_products JSON,
+                theme VARCHAR(50) DEFAULT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)

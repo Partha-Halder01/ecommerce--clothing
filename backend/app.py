@@ -1072,9 +1072,10 @@ def admin_create_product(current_user):
             video_url=data.get('video_url'),
             faqs=data.get('faqs'),
             related_products=data.get('related_products'),
-            original_price=data.get('original_price')
+            original_price=data.get('original_price'),
+            theme=data.get('theme')
         )
-        
+
         product = get_product_by_id(product_id)
         return jsonify(product), 201
         
@@ -1117,9 +1118,10 @@ def admin_update_product(current_user, product_id):
             gallery_images=data.get('gallery_images'),
             video_url=data.get('video_url'),
             faqs=data.get('faqs'),
-            related_products=data.get('related_products')
+            related_products=data.get('related_products'),
+            theme=data.get('theme')
         )
-        
+
         product = get_product_by_id(product_id)
         return jsonify(product)
         

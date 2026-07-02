@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Product, getCurrentUser } from "@/lib/api"
+import { getProductTheme } from "@/lib/product-themes"
 import { useToast } from "@/hooks/use-toast"
 import { AuthModal } from "@/components/auth/auth-modal"
 
@@ -293,9 +294,11 @@ export function ProductDetails({ product }: ProductDetailsProps) {
     touchStartX.current = null
   }
 
+  const theme = getProductTheme(product.theme)
+
   return (
-    <>
-      <section className="py-6 sm:py-8 lg:py-12 bg-[#FCFBF8] overflow-hidden">
+    <div style={theme.vars as React.CSSProperties}>
+      <section className="py-6 sm:py-8 lg:py-12 bg-[var(--pt-wash)] overflow-hidden">
         <div className="container mx-auto px-4 lg:px-8 max-w-7xl">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-16 lg:items-start">
             {/* Images */}
@@ -306,7 +309,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
               className="space-y-3 sm:space-y-4 lg:sticky lg:top-24"
             >
               <div
-                className="relative aspect-[3/4] lg:aspect-[4/5] max-w-lg mx-auto overflow-hidden bg-[#1C1615]/5 group/img border border-[#D8B4A0]/10 hover:border-[#D8B4A0]/40 transition-all duration-700 touch-pan-y"
+                className="relative aspect-[3/4] lg:aspect-[4/5] max-w-lg mx-auto overflow-hidden bg-[#1C1615]/5 group/img border border-[var(--pt-accent-10)] hover:border-[var(--pt-accent-40)] transition-all duration-700 touch-pan-y"
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
               >
@@ -325,10 +328,10 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                   </motion.div>
                 </AnimatePresence>
                 {/* Corner accents */}
-                <div className="absolute top-0 left-0 w-8 h-[1px] bg-[#D8B4A0]/40 pointer-events-none z-10" />
-                <div className="absolute top-0 left-0 w-[1px] h-8 bg-[#D8B4A0]/40 pointer-events-none z-10" />
-                <div className="absolute bottom-0 right-0 w-8 h-[1px] bg-[#D8B4A0]/40 pointer-events-none z-10" />
-                <div className="absolute bottom-0 right-0 w-[1px] h-8 bg-[#D8B4A0]/40 pointer-events-none z-10" />
+                <div className="absolute top-0 left-0 w-8 h-[1px] bg-[var(--pt-accent-40)] pointer-events-none z-10" />
+                <div className="absolute top-0 left-0 w-[1px] h-8 bg-[var(--pt-accent-40)] pointer-events-none z-10" />
+                <div className="absolute bottom-0 right-0 w-8 h-[1px] bg-[var(--pt-accent-40)] pointer-events-none z-10" />
+                <div className="absolute bottom-0 right-0 w-[1px] h-8 bg-[var(--pt-accent-40)] pointer-events-none z-10" />
                 {/* Watermark */}
                 <div className="absolute bottom-4 left-4 pointer-events-none z-10">
                   <span className="text-[#FCFBF8]/40 text-[10px] font-bold tracking-[0.3em] uppercase select-none" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.5)', fontFamily: 'var(--font-playfair)' }}>Inyou</span>
@@ -375,7 +378,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                         setSlideDirection(index > selectedImage ? 1 : -1)
                         setSelectedImage(index)
                       }}
-                      className={`relative aspect-square overflow-hidden bg-[#FCFBF8] ${selectedImage === index ? "ring-2 ring-[#D8B4A0]" : "ring-1 ring-[#D8B4A0]/20 hover:ring-[#D8B4A0]/50"} transition-all duration-300`}>
+                      className={`relative aspect-square overflow-hidden bg-[#FCFBF8] ${selectedImage === index ? "ring-2 ring-[var(--pt-accent)]" : "ring-1 ring-[var(--pt-accent-20)] hover:ring-[var(--pt-accent-50)]"} transition-all duration-300`}>
                       <Image src={image || "/placeholder.svg"} alt={`${product.name} ${index + 1}`} fill loading="lazy" sizes="(max-width: 1024px) 22vw, 110px" className="object-contain" />
                       {/* Watermark */}
                       <div className="absolute bottom-1 left-1 pointer-events-none">
@@ -396,7 +399,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
             >
               <motion.div variants={fadeIn} className="flex items-start justify-between gap-4 mb-6 sm:mb-8">
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.3em] text-[#D8B4A0] mb-3" style={{ fontFamily: "var(--font-body)" }}>{product.category}</p>
+                  <p className="text-[10px] uppercase tracking-[0.3em] text-[var(--pt-accent)] mb-3" style={{ fontFamily: "var(--font-body)" }}>{product.category}</p>
                   <h1 className="text-2xl sm:text-3xl lg:text-4xl font-light mb-4 text-[#1C1615] uppercase tracking-widest" style={{ fontFamily: "var(--font-playfair)" }}>{product.name}</h1>
                   <div className="flex items-center gap-4">
                     <span className="text-2xl sm:text-3xl font-medium text-[#1C1615] tracking-widest" style={{ fontFamily: "var(--font-body)" }}>{formatPrice(product.price)}</span>
@@ -413,8 +416,8 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                   {product.stock === 0 && <p className="text-xs text-red-600 mt-3 uppercase tracking-widest">Currently Unavailable</p>}
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="icon" className={`rounded-full border-[#D8B4A0] transition-transform hover:scale-110 ${isInWishlist ? 'bg-red-50' : 'bg-transparent'}`} onClick={toggleWishlist}><Heart className={`h-4 w-4 ${isInWishlist ? 'text-red-500 fill-red-500' : 'text-[#1C1615]'}`} /></Button>
-                  <Button variant="outline" size="icon" className="rounded-full bg-transparent border-[#D8B4A0] transition-transform hover:scale-110" onClick={handleShare}><Share2 className="h-4 w-4 text-[#1C1615]" /></Button>
+                  <Button variant="outline" size="icon" className={`rounded-full border-[var(--pt-accent)] transition-transform hover:scale-110 ${isInWishlist ? 'bg-red-50' : 'bg-transparent'}`} onClick={toggleWishlist}><Heart className={`h-4 w-4 ${isInWishlist ? 'text-red-500 fill-red-500' : 'text-[#1C1615]'}`} /></Button>
+                  <Button variant="outline" size="icon" className="rounded-full bg-transparent border-[var(--pt-accent)] transition-transform hover:scale-110" onClick={handleShare}><Share2 className="h-4 w-4 text-[#1C1615]" /></Button>
                 </div>
               </motion.div>
 
@@ -431,7 +434,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                   <div className="flex gap-3">
                     {colors.map((color: any) => (
                       <button key={color.name} onClick={() => setSelectedColor(color)}
-                        className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-transform hover:scale-110 ${selectedColor?.name === color.name ? "border-[#1C1615]" : "border-transparent"}`}
+                        className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-transform hover:scale-110 ${selectedColor?.name === color.name ? "border-[var(--pt-dark)]" : "border-transparent"}`}
                         style={{ backgroundColor: color.value }}>
                         {selectedColor?.name === color.name && <Check className="h-4 w-4 text-[#FCFBF8] drop-shadow-md" />}
                       </button>
@@ -452,8 +455,8 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                         key={size}
                         onClick={() => setSelectedSize(size)}
                         className={`min-w-[70px] h-10 px-4 flex items-center justify-center border text-sm transition-all duration-300 ${selectedSize === size
-                          ? "border-[#1C1615] bg-[#1C1615] text-[#FCFBF8]"
-                          : "border-[#1C1615]/10 text-[#1C1615]/60 hover:border-[#1C1615]/30"
+                          ? "border-[var(--pt-dark)] bg-[var(--pt-dark)] text-[#FCFBF8]"
+                          : "border-[var(--pt-dark)]/10 text-[#1C1615]/60 hover:border-[var(--pt-dark)]/30"
                           }`}
                       >
                         {size}
@@ -466,10 +469,10 @@ export function ProductDetails({ product }: ProductDetailsProps) {
               {/* Quantity */}
               <motion.div variants={fadeIn} className="mb-6">
                 <p className="text-sm font-medium mb-3 text-[#1C1615]">Quantity</p>
-                <div className="flex items-center border border-[#D8B4A0] rounded-lg w-fit">
-                  <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-2.5 hover:bg-[#D8B4A0]/20 text-[#1C1615] transition-colors"><Minus className="h-4 w-4" /></button>
+                <div className="flex items-center border border-[var(--pt-accent)] rounded-lg w-fit">
+                  <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-2.5 hover:bg-[var(--pt-accent-20)] text-[#1C1615] transition-colors"><Minus className="h-4 w-4" /></button>
                   <span className="w-10 text-center font-medium text-[#1C1615]">{quantity}</span>
-                  <button onClick={() => setQuantity(quantity + 1)} className="p-2.5 hover:bg-[#D8B4A0]/20 text-[#1C1615] transition-colors"><Plus className="h-4 w-4" /></button>
+                  <button onClick={() => setQuantity(quantity + 1)} className="p-2.5 hover:bg-[var(--pt-accent-20)] text-[#1C1615] transition-colors"><Plus className="h-4 w-4" /></button>
                 </div>
               </motion.div>
 
@@ -479,7 +482,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                   size="lg"
                   onClick={handleAddToCart}
                   disabled={product.stock === 0}
-                  className="flex-1 h-14 sm:h-12 bg-[#1C1615] hover:bg-[#D8B4A0] text-[#FCFBF8] rounded-none uppercase tracking-widest font-bold transition-all duration-300"
+                  className="flex-1 h-14 sm:h-12 bg-[var(--pt-dark)] hover:bg-[var(--pt-accent)] text-[#FCFBF8] rounded-none uppercase tracking-widest font-bold transition-all duration-300"
                 >
                   <ShoppingBag className="w-4 h-4 mr-2" />
                   Add to Cart
@@ -488,20 +491,20 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                   size="lg"
                   onClick={handleBuyNow}
                   disabled={product.stock === 0}
-                  className="flex-1 h-14 sm:h-12 bg-[#FCFBF8] border border-[#1C1615] text-[#1C1615] hover:bg-[#1C1615] hover:text-[#FCFBF8] rounded-none uppercase tracking-widest font-bold transition-all duration-300"
+                  className="flex-1 h-14 sm:h-12 bg-[#FCFBF8] border border-[var(--pt-dark)] text-[#1C1615] hover:bg-[var(--pt-dark)] hover:text-[#FCFBF8] rounded-none uppercase tracking-widest font-bold transition-all duration-300"
                 >
                   Buy Now
                 </Button>
               </motion.div>
 
               {/* Product Details */}
-              <motion.div variants={fadeIn} className="border-t border-[#D8B4A0]/20 pt-8">
-                <h3 className="text-xs font-bold uppercase tracking-[0.2em] mb-4 text-[#D8B4A0]" style={{ fontFamily: "var(--font-body)" }}>Product Details</h3>
+              <motion.div variants={fadeIn} className="border-t border-[var(--pt-accent-20)] pt-8">
+                <h3 className="text-xs font-bold uppercase tracking-[0.2em] mb-4 text-[var(--pt-accent)]" style={{ fontFamily: "var(--font-body)" }}>Product Details</h3>
                 <ul className="space-y-2 text-sm text-[#1C1615]/80">
-                  <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#1C1615]" />Category: {product.category}</li>
+                  <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[var(--pt-dark)]" />Category: {product.category}</li>
                   {product.stock > 0 && (
                     <li className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#1C1615]" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--pt-dark)]" />
                       {product.stock < 20 ? "Limited Stock — order soon" : "In Stock"}
                     </li>
                   )}
@@ -516,18 +519,18 @@ export function ProductDetails({ product }: ProductDetailsProps) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6 }}
-            className="mt-12 pt-8 border-t border-[#D8B4A0]/30"
+            className="mt-12 pt-8 border-t border-[var(--pt-accent-30)]"
           >
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-xl sm:text-2xl font-light text-[#1C1615] uppercase tracking-widest" style={{ fontFamily: "var(--font-playfair)" }}>Customer Reviews</h2>
-              <Button variant="outline" onClick={() => setShowReviewForm(!showReviewForm)} className="rounded-none bg-transparent border-[#D8B4A0] text-[#1C1615] hover:bg-[#1C1615] hover:text-[#FCFBF8] uppercase tracking-widest text-[10px] px-6">
+              <Button variant="outline" onClick={() => setShowReviewForm(!showReviewForm)} className="rounded-none bg-transparent border-[var(--pt-accent)] text-[#1C1615] hover:bg-[var(--pt-dark)] hover:text-[#FCFBF8] uppercase tracking-widest text-[10px] px-6">
                 Write a Review
               </Button>
             </div>
 
             {/* Review Form */}
             {showReviewForm && (
-              <form onSubmit={submitReview} className="bg-[#FCFBF8] rounded-xl p-6 mb-6 border border-[#D8B4A0]/30">
+              <form onSubmit={submitReview} className="bg-[#FCFBF8] rounded-xl p-6 mb-6 border border-[var(--pt-accent-30)]">
                 <h3 className="font-semibold mb-4 text-[#1C1615]">Write Your Review</h3>
                 <div className="space-y-4">
                   <div>
@@ -550,7 +553,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                     <Textarea value={reviewForm.text} onChange={(e) => setReviewForm({ ...reviewForm, text: e.target.value })}
                       className="mt-1" rows={3} placeholder="Share your experience..." />
                   </div>
-                  <Button type="submit" disabled={isSubmitting} className="bg-[#1C1615] hover:bg-[#1C1615]">
+                  <Button type="submit" disabled={isSubmitting} className="bg-[var(--pt-dark)] hover:bg-[var(--pt-dark)]">
                     {isSubmitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />} Submit Review
                   </Button>
                 </div>
@@ -565,7 +568,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                 {/* Reviews Grid - 3 per page */}
                 <div className="space-y-4">
                   {reviews.slice(reviewPage * 3, reviewPage * 3 + 3).map((review) => (
-                    <div key={review.id} className="bg-[#FCFBF8] rounded-xl p-6 border border-[#D8B4A0]/30">
+                    <div key={review.id} className="bg-[#FCFBF8] rounded-xl p-6 border border-[var(--pt-accent-30)]">
                       <div className="flex items-center justify-between mb-2">
                         <span className="font-semibold text-[#1C1615]">{review.reviewer_name}</span>
                         {renderStars(review.rating)}
@@ -584,7 +587,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                       size="icon"
                       onClick={() => setReviewPage(prev => Math.max(0, prev - 1))}
                       disabled={reviewPage === 0}
-                      className="border-[#1C1615] text-[#1C1615] hover:bg-[#1C1615] hover:text-[#FCFBF8] disabled:opacity-50"
+                      className="border-[var(--pt-dark)] text-[#1C1615] hover:bg-[var(--pt-dark)] hover:text-[#FCFBF8] disabled:opacity-50"
                     >
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
@@ -594,7 +597,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                         <button
                           key={idx}
                           onClick={() => setReviewPage(idx)}
-                          className={`w-2.5 h-2.5 rounded-full transition-colors ${reviewPage === idx ? 'bg-[#1C1615]' : 'bg-[#D8B4A0]/40 hover:bg-[#D8B4A0]'
+                          className={`w-2.5 h-2.5 rounded-full transition-colors ${reviewPage === idx ? 'bg-[var(--pt-dark)]' : 'bg-[var(--pt-accent-40)] hover:bg-[var(--pt-accent)]'
                             }`}
                         />
                       ))}
@@ -605,7 +608,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                       size="icon"
                       onClick={() => setReviewPage(prev => Math.min(Math.ceil(reviews.length / 3) - 1, prev + 1))}
                       disabled={reviewPage >= Math.ceil(reviews.length / 3) - 1}
-                      className="border-[#1C1615] text-[#1C1615] hover:bg-[#1C1615] hover:text-[#FCFBF8] disabled:opacity-50"
+                      className="border-[var(--pt-dark)] text-[#1C1615] hover:bg-[var(--pt-dark)] hover:text-[#FCFBF8] disabled:opacity-50"
                     >
                       <ChevronRight className="h-4 w-4" />
                     </Button>
@@ -624,7 +627,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
             <h2 className="text-xl sm:text-2xl font-light text-[#1C1615] mb-8 uppercase tracking-widest text-center" style={{ fontFamily: "var(--font-playfair)" }}>Frequently Asked Questions</h2>
             <div className="space-y-3">
               {faqs.map((faq, index) => (
-                <div key={index} className="border border-[#D8B4A0]/20 overflow-hidden">
+                <div key={index} className="border border-[var(--pt-accent-20)] overflow-hidden">
                   <button
                     onClick={() => setOpenFaq(openFaq === index ? null : index)}
                     className="w-full flex items-center justify-between p-5 text-left bg-[#FCFBF8] hover:bg-[#F4F1EB] transition-colors"
@@ -633,7 +636,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                     <ChevronDown className={`w-5 h-5 text-[#1C1615] transition-transform ${openFaq === index ? 'rotate-180' : ''}`} />
                   </button>
                   {openFaq === index && (
-                    <div className="p-4 bg-[#FCFBF8] text-sm text-[#1C1615]/80 leading-relaxed border-t border-[#D8B4A0]/30">
+                    <div className="p-4 bg-[#FCFBF8] text-sm text-[#1C1615]/80 leading-relaxed border-t border-[var(--pt-accent-30)]">
                       {faq.answer}
                     </div>
                   )}
@@ -652,6 +655,6 @@ export function ProductDetails({ product }: ProductDetailsProps) {
         title="Create Account to Continue"
         message="Sign up to complete your purchase"
       />
-    </>
+    </div>
   )
 }

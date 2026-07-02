@@ -40,6 +40,7 @@ export interface Product {
   gallery_images?: string[]
   video_url?: string
   is_featured?: boolean
+  theme?: string
   created_at: string
 }
 
@@ -231,6 +232,7 @@ export const productsAPI = {
     sizes?: string[]
     gallery_images?: string[]
     video_url?: string
+    theme?: string
   }): Promise<Product> => {
     return apiRequest<Product>("/api/admin/products", {
       method: "POST",

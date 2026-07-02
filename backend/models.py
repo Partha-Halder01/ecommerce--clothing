@@ -132,9 +132,9 @@ def get_all_customers():
 
 # ==================== PRODUCT MODEL ====================
 
-def create_product(name, category, price, stock, description=None, image_url=None, 
-                   colors=None, sizes=None, gallery_images=None, video_url=None, 
-                   is_featured=False, faqs=None, related_products=None, original_price=None, slug=None):
+def create_product(name, category, price, stock, description=None, image_url=None,
+                   colors=None, sizes=None, gallery_images=None, video_url=None,
+                   is_featured=False, faqs=None, related_products=None, original_price=None, slug=None, theme=None):
     """Create a new product"""
     status = 'Active' if stock > 0 else 'Out of Stock'
     if 0 < stock < 20:
@@ -155,10 +155,10 @@ def create_product(name, category, price, stock, description=None, image_url=Non
     related_json = json.dumps(related_products) if related_products else '[]'
         
     query = """
-        INSERT INTO products (name, slug, description, category, price, original_price, stock, status, image_url, colors, sizes, gallery_images, video_url, is_featured, faqs, related_products)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        INSERT INTO products (name, slug, description, category, price, original_price, stock, status, image_url, colors, sizes, gallery_images, video_url, is_featured, faqs, related_products, theme)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """
-    product_id = execute_query(query, (name, slug, description, category, price, original_price, stock, status, image_url, colors_json, sizes_json, gallery_json, video_url, is_featured, faqs_json, related_json))
+    product_id = execute_query(query, (name, slug, description, category, price, original_price, stock, status, image_url, colors_json, sizes_json, gallery_json, video_url, is_featured, faqs_json, related_json, theme))
     return product_id
 
 def get_all_products():
@@ -231,7 +231,7 @@ def get_product_by_slug(slug):
 def update_product(product_id, **kwargs):
     """Update a product"""
     # Build dynamic update query
-    allowed_fields = ['name', 'slug', 'description', 'category', 'price', 'original_price', 'stock', 'image_url', 'video_url', 'is_featured']
+    allowed_fields = ['name', 'slug', 'description', 'category', 'price', 'original_price', 'stock', 'image_url', 'video_url', 'is_featured', 'theme']
     json_fields = ['colors', 'sizes', 'gallery_images', 'faqs', 'related_products']
     update_fields = []
     values = []

@@ -11,6 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { productsAPI, categoriesAPI, getCurrentUser, authAPI, Product, Category, getAuthToken } from "@/lib/api"
+import { PRODUCT_THEMES } from "@/lib/product-themes"
 import { useToast } from "@/hooks/use-toast"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
@@ -37,12 +38,14 @@ interface FormData {
   image_url: string; colors: { name: string; value: string }[];
   sizes: string[]; gallery_images: GalleryImage[]; video_url: string;
   faqs: { question: string; answer: string }[]; related_products: number[];
+  theme: string;
 }
 
 const initialFormData: FormData = {
   name: "", slug: "", description: "", category: "", price: "", original_price: "", stock: "",
   image_url: "", colors: [], sizes: [], gallery_images: [], video_url: "",
   faqs: [], related_products: [],
+  theme: "default",
 }
 
 export default function AdminProducts() {
@@ -228,6 +231,7 @@ export default function AdminProducts() {
       video_url: formData.video_url || undefined,
       faqs: formData.faqs.length > 0 ? formData.faqs : undefined,
       related_products: formData.related_products.length > 0 ? formData.related_products : undefined,
+      theme: formData.theme || "default",
     }
 
     try {
@@ -280,6 +284,7 @@ export default function AdminProducts() {
       video_url: product.video_url || "",
       faqs: Array.isArray((product as any).faqs) ? (product as any).faqs : [],
       related_products: Array.isArray((product as any).related_products) ? (product as any).related_products : [],
+      theme: product.theme || "default",
     })
     setIsEditOpen(true)
   }
@@ -567,6 +572,25 @@ export default function AdminProducts() {
                 {formData.video_url && (
                   <button type="button" onClick={() => updateFormField('video_url', '')} className="text-red-500"><X className="w-4 h-4" /></button>
                 )}
+              </div>
+            </div>
+
+            {/* Page Theme */}
+            <div>
+              <label className="text-sm font-medium mb-2 block">Product Page Theme</label>
+              <p className="text-xs text-[#6B635E]/70 mb-2">Pick a palette matching the product&apos;s packaging — the product page is styled with these colors.</p>
+              <div className="flex flex-wrap gap-2">
+                {PRODUCT_THEMES.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => updateFormField('theme', t.id)}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded border text-xs font-medium transition-all ${formData.theme === t.id ? "border-[#1C1615] ring-1 ring-[#1C1615] bg-[#F4F1EB]" : "border-gray-300 hover:border-[#1C1615]"}`}
+                  >
+                    <span className="w-4 h-4 rounded-full border border-black/10" style={{ backgroundColor: t.swatch }} />
+                    {t.label}
+                  </button>
+                ))}
               </div>
             </div>
 
