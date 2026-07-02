@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
@@ -33,6 +33,8 @@ export function ProductDetails({ product }: ProductDetailsProps) {
   const router = useRouter()
   const { toast } = useToast()
   const [selectedImage, setSelectedImage] = useState(0)
+  const [slideDirection, setSlideDirection] = useState(0)
+  const touchStartX = useRef<number | null>(null)
   const [selectedSize, setSelectedSize] = useState("")
   const [quantity, setQuantity] = useState(1)
   const [reviews, setReviews] = useState<Review[]>([])
@@ -264,6 +266,33 @@ export function ProductDetails({ product }: ProductDetailsProps) {
     }
   }
 
+  const slideVariants = {
+    enter: (dir: number) => ({ x: dir >= 0 ? "100%" : "-100%", opacity: 0 }),
+    center: { x: 0, opacity: 1 },
+    exit: (dir: number) => ({ x: dir >= 0 ? "-100%" : "100%", opacity: 0 }),
+  }
+
+  const goToImage = (dir: number) => {
+    if (productImages.length <= 1) return
+    setSlideDirection(dir)
+    setSelectedImage((prev) => (prev + dir + productImages.length) % productImages.length)
+  }
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return
+    const deltaX = e.changedTouches[0].clientX - touchStartX.current
+    const SWIPE_THRESHOLD = 40
+    if (Math.abs(deltaX) > SWIPE_THRESHOLD) {
+      // Swipe left -> next image, swipe right -> previous image
+      goToImage(deltaX < 0 ? 1 : -1)
+    }
+    touchStartX.current = null
+  }
+
   return (
     <>
       <section className="py-6 sm:py-8 lg:py-12 bg-[#FCFBF8] overflow-hidden">
@@ -276,17 +305,64 @@ export function ProductDetails({ product }: ProductDetailsProps) {
               transition={{ duration: 0.8, ease: "easeOut" }}
               className="space-y-3 sm:space-y-4 lg:sticky lg:top-24"
             >
-              <div className="relative aspect-[3/4] lg:aspect-[4/5] max-w-lg mx-auto overflow-hidden bg-[#1C1615]/5 group/img border border-[#D8B4A0]/10 hover:border-[#D8B4A0]/40 transition-all duration-700">
-                <Image src={productImages[selectedImage] || "/placeholder.svg"} alt={product.name} fill priority sizes="(max-width: 1024px) 100vw, 45vw" className="object-cover transition-transform duration-[1.5s] group-hover/img:scale-105" />
+              <div
+                className="relative aspect-[3/4] lg:aspect-[4/5] max-w-lg mx-auto overflow-hidden bg-[#1C1615]/5 group/img border border-[#D8B4A0]/10 hover:border-[#D8B4A0]/40 transition-all duration-700 touch-pan-y"
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
+              >
+                <AnimatePresence initial={false} custom={slideDirection} mode="popLayout">
+                  <motion.div
+                    key={selectedImage}
+                    custom={slideDirection}
+                    variants={slideVariants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={{ duration: 0.35, ease: "easeInOut" }}
+                    className="absolute inset-0"
+                  >
+                    <Image src={productImages[selectedImage] || "/placeholder.svg"} alt={product.name} fill priority sizes="(max-width: 1024px) 100vw, 45vw" className="object-cover" />
+                  </motion.div>
+                </AnimatePresence>
                 {/* Corner accents */}
-                <div className="absolute top-0 left-0 w-8 h-[1px] bg-[#D8B4A0]/40" />
-                <div className="absolute top-0 left-0 w-[1px] h-8 bg-[#D8B4A0]/40" />
-                <div className="absolute bottom-0 right-0 w-8 h-[1px] bg-[#D8B4A0]/40" />
-                <div className="absolute bottom-0 right-0 w-[1px] h-8 bg-[#D8B4A0]/40" />
+                <div className="absolute top-0 left-0 w-8 h-[1px] bg-[#D8B4A0]/40 pointer-events-none z-10" />
+                <div className="absolute top-0 left-0 w-[1px] h-8 bg-[#D8B4A0]/40 pointer-events-none z-10" />
+                <div className="absolute bottom-0 right-0 w-8 h-[1px] bg-[#D8B4A0]/40 pointer-events-none z-10" />
+                <div className="absolute bottom-0 right-0 w-[1px] h-8 bg-[#D8B4A0]/40 pointer-events-none z-10" />
                 {/* Watermark */}
-                <div className="absolute bottom-4 left-4 pointer-events-none">
+                <div className="absolute bottom-4 left-4 pointer-events-none z-10">
                   <span className="text-[#FCFBF8]/40 text-[10px] font-bold tracking-[0.3em] uppercase select-none" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.5)', fontFamily: 'var(--font-playfair)' }}>Inyou</span>
                 </div>
+                {/* Prev / Next arrows (desktop hover, always tappable on touch) */}
+                {productImages.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => goToImage(-1)}
+                      aria-label="Previous image"
+                      className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#1C1615]/40 backdrop-blur-sm text-[#FCFBF8] flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 hover:bg-[#1C1615]/70"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => goToImage(1)}
+                      aria-label="Next image"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#1C1615]/40 backdrop-blur-sm text-[#FCFBF8] flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 hover:bg-[#1C1615]/70"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                    {/* Dot indicators (visible on mobile where hover arrows don't apply) */}
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex gap-1.5 sm:hidden">
+                      {productImages.map((_, i) => (
+                        <span
+                          key={i}
+                          className={`h-1.5 rounded-full transition-all duration-300 ${i === selectedImage ? "w-4 bg-[#FCFBF8]" : "w-1.5 bg-[#FCFBF8]/40"}`}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
               {productImages.length > 1 && (
                 <div className="grid grid-cols-4 gap-2 sm:gap-4 max-w-md mx-auto">
@@ -294,7 +370,11 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      key={index} onClick={() => setSelectedImage(index)}
+                      key={index}
+                      onClick={() => {
+                        setSlideDirection(index > selectedImage ? 1 : -1)
+                        setSelectedImage(index)
+                      }}
                       className={`relative aspect-square overflow-hidden bg-[#FCFBF8] ${selectedImage === index ? "ring-2 ring-[#D8B4A0]" : "ring-1 ring-[#D8B4A0]/20 hover:ring-[#D8B4A0]/50"} transition-all duration-300`}>
                       <Image src={image || "/placeholder.svg"} alt={`${product.name} ${index + 1}`} fill loading="lazy" sizes="(max-width: 1024px) 22vw, 110px" className="object-contain" />
                       {/* Watermark */}
@@ -419,7 +499,12 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                 <h3 className="text-xs font-bold uppercase tracking-[0.2em] mb-4 text-[#D8B4A0]" style={{ fontFamily: "var(--font-body)" }}>Product Details</h3>
                 <ul className="space-y-2 text-sm text-[#1C1615]/80">
                   <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#1C1615]" />Category: {product.category}</li>
-                  <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#1C1615]" />Stock: {product.stock} available</li>
+                  {product.stock > 0 && (
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#1C1615]" />
+                      {product.stock < 20 ? "Limited Stock — order soon" : "In Stock"}
+                    </li>
+                  )}
                 </ul>
               </motion.div>
             </motion.div>
