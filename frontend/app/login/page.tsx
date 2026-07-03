@@ -1,16 +1,17 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { authAPI } from "@/lib/api"
+import { authAPI, settingsAPI } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 import { Mail, Lock, ArrowRight, ArrowLeft } from "lucide-react"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+const DEFAULT_LOGIN_IMAGE = "https://inyou.shop/uploads/products/523c80b2900c4a5e93a3ed1c7f8c17fc.jpeg"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -21,6 +22,13 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [loginMode, setLoginMode] = useState<"password" | "otp">("password")
   const [otpSent, setOtpSent] = useState(false)
+  const [bgImage, setBgImage] = useState(DEFAULT_LOGIN_IMAGE)
+
+  useEffect(() => {
+    settingsAPI.getAuthPages()
+      .then((data) => { if (data.login_image) setBgImage(data.login_image) })
+      .catch(() => { })
+  }, [])
 
   const handlePasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -199,7 +207,7 @@ export default function LoginPage() {
         animate={{ opacity: 1 }}
         transition={{ duration: 1.5 }}
         className="h-[30vh] lg:h-auto lg:flex-1 bg-cover bg-center order-1 lg:order-2"
-        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1594035910387-fea47794261f?q=80&w=1920&auto=format&fit=crop')" }}>
+        style={{ backgroundImage: `url('${bgImage}')` }}>
         <div className="w-full h-full bg-[#1C1615]/20" />
       </motion.div>
     </div>

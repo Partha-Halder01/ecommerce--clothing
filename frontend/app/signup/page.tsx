@@ -1,15 +1,17 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { settingsAPI } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2, Mail, ArrowLeft } from "lucide-react"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+const DEFAULT_SIGNUP_IMAGE = "https://inyou.shop/uploads/products/ecce669f0da64042aa1fd5e1e68feebd.jpeg"
 
 export default function SignupPage() {
   const router = useRouter()
@@ -19,6 +21,13 @@ export default function SignupPage() {
   const [otp, setOtp] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [devOtp, setDevOtp] = useState("") // For development testing
+  const [bgImage, setBgImage] = useState(DEFAULT_SIGNUP_IMAGE)
+
+  useEffect(() => {
+    settingsAPI.getAuthPages()
+      .then((data) => { if (data.signup_image) setBgImage(data.signup_image) })
+      .catch(() => { })
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -126,7 +135,7 @@ export default function SignupPage() {
         animate={{ opacity: 1 }}
         transition={{ duration: 1.5 }}
         className="h-[25vh] lg:h-auto lg:flex-1 bg-cover bg-center order-1"
-        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?q=80&w=1920&auto=format&fit=crop')" }}>
+        style={{ backgroundImage: `url('${bgImage}')` }}>
         <div className="w-full h-full bg-[#1C1615]/20" />
       </motion.div>
 

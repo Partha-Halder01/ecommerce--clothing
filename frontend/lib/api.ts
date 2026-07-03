@@ -401,6 +401,11 @@ export interface ScrollingTextSettings {
   text: string
 }
 
+export interface AuthPagesSettings {
+  login_image: string
+  signup_image: string
+}
+
 export const settingsAPI = {
   getSaleBanner: async (): Promise<SaleBannerSettings> => {
     return apiRequest<SaleBannerSettings>("/api/settings/sale-banner")
@@ -430,6 +435,18 @@ export const settingsAPI = {
 
   updateScrollingText: async (data: ScrollingTextSettings): Promise<void> => {
     return apiRequest<void>("/api/admin/settings/scrolling-text", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    })
+  },
+
+  // Auth Page Images (login / signup background images)
+  getAuthPages: async (): Promise<AuthPagesSettings> => {
+    return apiRequest<AuthPagesSettings>("/api/settings/auth-pages")
+  },
+
+  updateAuthPages: async (data: AuthPagesSettings): Promise<void> => {
+    return apiRequest<void>("/api/admin/settings/auth-pages", {
       method: "PUT",
       body: JSON.stringify(data),
     })

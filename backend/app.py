@@ -50,6 +50,8 @@ from models import (
     create_category, get_all_categories, get_active_categories, update_category, delete_category, get_categories_with_subcategories,
     # Settings
     get_sale_banner, update_sale_banner, get_hero_slides, update_hero_slides, get_scrolling_text, update_scrolling_text,
+    # Auth Page Images
+    get_auth_pages, update_auth_pages,
     # Homepage Sections
     get_our_story, update_our_story, get_testimonials, update_testimonials, get_shop_the_look, update_shop_the_look,
     # Featured Products
@@ -1578,6 +1580,26 @@ def admin_update_scrolling_text(current_user):
         data = request.get_json()
         update_scrolling_text(data.get('enabled', True), data.get('text', ''))
         return jsonify({'message': 'Scrolling text updated'})
+    except Exception as e:
+        return jsonify({'detail': str(e)}), 500
+
+# ==================== AUTH PAGE IMAGES ====================
+
+@app.route('/api/settings/auth-pages', methods=['GET'])
+def public_get_auth_pages():
+    try:
+        return jsonify(get_auth_pages())
+    except Exception as e:
+        return jsonify({'detail': str(e)}), 500
+
+@app.route('/api/admin/settings/auth-pages', methods=['PUT'])
+@token_required
+@admin_required
+def admin_update_auth_pages(current_user):
+    try:
+        data = request.get_json()
+        update_auth_pages(data.get('login_image', ''), data.get('signup_image', ''))
+        return jsonify({'message': 'Auth page images updated'})
     except Exception as e:
         return jsonify({'detail': str(e)}), 500
 

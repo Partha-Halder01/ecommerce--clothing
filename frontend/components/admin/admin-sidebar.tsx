@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, ChevronRight, Menu, X, FolderOpen, Layers, Image, Video, MessageSquare, ShoppingBag, Ticket, Star, CreditCard, Mail, Sparkles, Truck } from "lucide-react"
+import { LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, ChevronRight, Menu, X, FolderOpen, Layers, Image, Video, MessageSquare, ShoppingBag, Ticket, Star, CreditCard, Mail, Sparkles, Truck, KeyRound } from "lucide-react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { authAPI } from "@/lib/api"
@@ -18,6 +18,7 @@ const menuItems = [
   { icon: Star, label: "Reviews", href: "/admin/reviews" },
   { icon: Mail, label: "Contacts", href: "/admin/contacts" },
   { icon: Image, label: "Hero Settings", href: "/admin/hero" },
+  { icon: KeyRound, label: "Login & Signup Images", href: "/admin/auth-pages" },
   { icon: Video, label: "Our Story", href: "/admin/our-story" },
   { icon: MessageSquare, label: "Testimonials", href: "/admin/testimonials" },
   { icon: ShoppingBag, label: "Shop The Look", href: "/admin/shop-the-look" },

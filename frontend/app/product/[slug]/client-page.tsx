@@ -118,7 +118,7 @@ export default function ProductPageClient() {
                             >
                                 {relatedProducts.map((p) => (
                                     <motion.div variants={itemVariants} key={p.id}>
-                                        <Link href={`/product/${p.id}`} className="group block">
+                                        <Link href={`/product/${p.slug}`} className="group block">
                                             <div className="relative aspect-[3/4] overflow-hidden mb-4 bg-[#FCFBF8]/5">
                                                 <img
                                                     src={p.image_url || "https://images.unsplash.com/photo-1594035910387-fea47794261f?q=80&w=800&auto=format&fit=crop"}

@@ -629,6 +629,21 @@ def update_scrolling_text(enabled, text):
         'text': text
     })
 
+# ==================== AUTH PAGE IMAGES ====================
+
+def get_auth_pages():
+    """Get login/signup page background image settings"""
+    return get_setting('auth_pages') or {
+        'login_image': 'https://inyou.shop/uploads/products/523c80b2900c4a5e93a3ed1c7f8c17fc.jpeg',
+        'signup_image': 'https://inyou.shop/uploads/products/ecce669f0da64042aa1fd5e1e68feebd.jpeg',
+    }
+
+def update_auth_pages(login_image, signup_image):
+    """Update login/signup page background images"""
+    return update_setting('auth_pages', {
+        'login_image': login_image, 'signup_image': signup_image
+    })
+
 # ==================== HOMEPAGE SECTIONS ====================
 
 def get_our_story():
