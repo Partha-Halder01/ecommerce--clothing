@@ -379,7 +379,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                         setSelectedImage(index)
                       }}
                       className={`relative aspect-square overflow-hidden bg-[#FCFBF8] ${selectedImage === index ? "ring-2 ring-[var(--pt-accent)]" : "ring-1 ring-[var(--pt-accent-20)] hover:ring-[var(--pt-accent-50)]"} transition-all duration-300`}>
-                      <Image src={image || "/placeholder.svg"} alt={`${product.name} ${index + 1}`} fill loading="lazy" sizes="(max-width: 1024px) 22vw, 110px" className="object-contain" />
+                      <Image src={image || "/placeholder.svg"} alt={`${product.name} ${index + 1}`} fill loading="lazy" sizes="(max-width: 1024px) 22vw, 110px" className="object-cover" />
                       {/* Watermark */}
                       <div className="absolute bottom-1 left-1 pointer-events-none">
                         <span className="text-[#FCFBF8]/50 text-[8px] font-bold tracking-widest uppercase select-none" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>Inyou</span>
