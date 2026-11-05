@@ -79,6 +79,7 @@ export default function AddressesPage() {
         setEditingId(null)
     }
 
+
     const handleEdit = (address: Address) => {
         setFormData({
             name: address.name, phone: address.phone, address: address.address,

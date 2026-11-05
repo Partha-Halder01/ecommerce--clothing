@@ -16,7 +16,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
 
 interface Coupon {
     id: number; code: string; discount_type: string; discount_value: number
-    min_order_amount: number; max_uses: number | null; used_count: number
+    min_order_amount: number; max_order_amount: number | null; max_uses: number | null; used_count: number
     expires_at: string | null; is_active: boolean; created_at: string
 }
 
@@ -30,7 +30,7 @@ export default function AdminCoupons() {
     const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null)
     const [form, setForm] = useState({
         code: "", discount_type: "percentage", discount_value: 10,
-        min_order_amount: 0, max_uses: "", expires_at: ""
+        min_order_amount: 0, max_order_amount: "", max_uses: "", expires_at: ""
     })
 
     useEffect(() => {
@@ -50,6 +50,11 @@ export default function AdminCoupons() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        const maxOrder = form.max_order_amount ? parseFloat(form.max_order_amount) : null
+        if (maxOrder !== null && maxOrder < (form.min_order_amount || 0)) {
+            toast({ title: "Error", description: "Max Order can't be lower than Min Order", variant: "destructive" })
+            return
+        }
         setIsSaving(true)
         try {
             const url = editingCoupon
@@ -60,6 +65,7 @@ export default function AdminCoupons() {
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getAuthToken()}` },
                 body: JSON.stringify({
                     ...form,
+                    max_order_amount: maxOrder,
                     max_uses: form.max_uses ? parseInt(form.max_uses) : null,
                     expires_at: form.expires_at || null
                 })
@@ -94,7 +100,7 @@ export default function AdminCoupons() {
     }
 
     const resetForm = () => {
-        setForm({ code: "", discount_type: "percentage", discount_value: 10, min_order_amount: 0, max_uses: "", expires_at: "" })
+        setForm({ code: "", discount_type: "percentage", discount_value: 10, min_order_amount: 0, max_order_amount: "", max_uses: "", expires_at: "" })
         setEditingCoupon(null)
     }
 
@@ -105,6 +111,7 @@ export default function AdminCoupons() {
             discount_type: coupon.discount_type,
             discount_value: coupon.discount_value,
             min_order_amount: coupon.min_order_amount,
+            max_order_amount: coupon.max_order_amount?.toString() || "",
             max_uses: coupon.max_uses?.toString() || "",
             expires_at: coupon.expires_at?.split('T')[0] || ""
         })
@@ -155,13 +162,19 @@ export default function AdminCoupons() {
                                     <Input type="number" value={form.min_order_amount} onChange={(e) => setForm({ ...form, min_order_amount: parseFloat(e.target.value) })} />
                                 </div>
                                 <div>
+                                    <label className="text-sm font-medium">Max Order (₹)</label>
+                                    <Input type="number" min="0" value={form.max_order_amount} onChange={(e) => setForm({ ...form, max_order_amount: e.target.value })} placeholder="No limit" />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
                                     <label className="text-sm font-medium">Usage Limit</label>
                                     <Input type="number" value={form.max_uses} onChange={(e) => setForm({ ...form, max_uses: e.target.value })} placeholder="Unlimited" />
                                 </div>
-                            </div>
-                            <div>
-                                <label className="text-sm font-medium">Expiry Date</label>
-                                <Input type="date" value={form.expires_at} onChange={(e) => setForm({ ...form, expires_at: e.target.value })} />
+                                <div>
+                                    <label className="text-sm font-medium">Expiry Date</label>
+                                    <Input type="date" value={form.expires_at} onChange={(e) => setForm({ ...form, expires_at: e.target.value })} />
+                                </div>
                             </div>
                             <Button type="submit" className="w-full" disabled={isSaving}>
                                 {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null} {editingCoupon ? 'Update' : 'Create'} Coupon
@@ -187,6 +200,7 @@ export default function AdminCoupons() {
                                         <p className="text-xs sm:text-sm text-muted-foreground">
                                             {coupon.discount_type === 'percentage' ? `${coupon.discount_value}% off` : `₹${coupon.discount_value} off`}
                                             {coupon.min_order_amount > 0 && ` • Min ₹${coupon.min_order_amount}`}
+                                            {!!coupon.max_order_amount && ` • Max ₹${coupon.max_order_amount}`}
                                         </p>
                                     </div>
                                 </div>

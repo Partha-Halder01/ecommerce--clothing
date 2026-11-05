@@ -4,7 +4,8 @@ import { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
-import { ChevronRight, Star, Grid3X3, LayoutGrid } from "lucide-react"
+import { ChevronRight, Grid3X3, LayoutGrid } from "lucide-react"
+import { ProductRating } from "@/components/product/product-rating"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { SaleTimer } from "@/components/home/sale-timer"
@@ -22,6 +23,8 @@ interface Product {
     image_url: string
     category: string
     stock: number
+    rating_average?: number
+    review_count?: number
 }
 
 interface Category {
@@ -79,8 +82,6 @@ export default function CategoryProductsPage() {
             setIsLoading(false)
         }
     }
-
-    const getRating = (id: number) => 3.5 + ((id * 7 + 3) % 15) / 10
 
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -209,17 +210,16 @@ export default function CategoryProductsPage() {
                             initial="hidden"
                             animate="show"
                             className={`grid gap-6 lg:gap-8 ${viewMode === 'grid'
-                                ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
-                                : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'
+                                ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-3'
+                                : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3'
                                 }`}
                         >
                             {products.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((product) => {
-                                const rating = getRating(product.id)
                                 return (
                                     <motion.div variants={itemVariants} key={product.id}>
                                         <Link href={`/product/${product.slug}`} className="group block h-full">
                                             <div className="bg-[#FCFBF8] h-full flex flex-col border border-[#D8B4A0]/30 hover:border-[#D8B4A0]/70 transition-all duration-500 hover:shadow-[0_8px_30px_rgba(216,180,160,0.15)]">
-                                                <div className={`relative overflow-hidden bg-[#1C1615]/5 ${viewMode === 'grid' ? 'aspect-[3/4]' : 'aspect-square'}`}>
+                                                <div className="relative overflow-hidden bg-[#1C1615]/5 aspect-square">
                                                     <Image
                                                         src={product.image_url || "/placeholder.svg"}
                                                         alt={product.name}
@@ -268,23 +268,7 @@ export default function CategoryProductsPage() {
                                                             )}
                                                         </div>
                                                         {/* Star Ratings */}
-                                                        <div className="flex items-center justify-center gap-1.5 mt-3">
-                                                            <div className="flex gap-0.5">
-                                                                {[1, 2, 3, 4, 5].map((star) => {
-                                                                    const filled = star <= Math.floor(rating)
-                                                                    const half = !filled && star === Math.ceil(rating) && rating % 1 >= 0.3
-                                                                    return (
-                                                                        <Star
-                                                                            key={star}
-                                                                            className={`w-3 h-3 ${filled ? 'fill-[#D8B4A0] text-[#D8B4A0]' : half ? 'fill-[#D8B4A0]/50 text-[#D8B4A0]' : 'fill-transparent text-[#D8B4A0]/40'}`}
-                                                                        />
-                                                                    )
-                                                                })}
-                                                            </div>
-                                                            <span className="text-[10px] text-[#6B635E] tracking-wider" style={{ fontFamily: "var(--font-body)" }}>
-                                                                {rating.toFixed(1)}
-                                                            </span>
-                                                        </div>
+                                                        <ProductRating average={product.rating_average} count={product.review_count} className="mt-3" />
                                                     </div>
                                                 </div>
                                             </div>

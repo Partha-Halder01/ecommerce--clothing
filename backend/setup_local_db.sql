@@ -117,6 +117,7 @@ CREATE TABLE IF NOT EXISTS coupons (
     discount_type ENUM('percentage', 'fixed') DEFAULT 'percentage',
     discount_value DECIMAL(10, 2) NOT NULL,
     min_order_amount DECIMAL(10, 2) DEFAULT 0,
+    max_order_amount DECIMAL(10, 2) DEFAULT NULL,
     max_uses INT DEFAULT NULL,
     used_count INT DEFAULT 0,
     expires_at TIMESTAMP NULL,

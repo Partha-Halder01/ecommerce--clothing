@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Save, CreditCard, Banknote, Truck, MessageCircle } from "lucide-react"
+import { Save, CreditCard, Banknote, Truck, MessageCircle, Share2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -33,6 +33,12 @@ export default function AdminSettings() {
   const [whatsappSettings, setWhatsappSettings] = useState({
     whatsapp_number: '',
     whatsapp_message: 'Hi! I am interested in your products.'
+  })
+  const [socialSettings, setSocialSettings] = useState({
+    instagram: '',
+    facebook: '',
+    twitter: '',
+    youtube: ''
   })
 
   useEffect(() => {
@@ -65,6 +71,14 @@ export default function AdminSettings() {
       if (whatsappRes.ok) {
         const whatsappData = await whatsappRes.json()
         setWhatsappSettings(whatsappData)
+      }
+      // Fetch Social settings
+      const socialRes = await fetch(`${API_BASE_URL}/api/settings/socials`, {
+        headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+      })
+      if (socialRes.ok) {
+        const socialData = await socialRes.json()
+        setSocialSettings(socialData)
       }
     } catch (error: any) {
       if (error.message?.includes("401")) { authAPI.logout(); router.push("/login") }
@@ -105,6 +119,17 @@ export default function AdminSettings() {
         body: JSON.stringify(whatsappSettings)
       })
       if (!whatsappRes.ok) throw new Error('Failed to save WhatsApp settings')
+
+      // Save Social settings
+      const socialRes = await fetch(`${API_BASE_URL}/api/admin/settings/socials`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getAuthToken()}`
+        },
+        body: JSON.stringify(socialSettings)
+      })
+      if (!socialRes.ok) throw new Error('Failed to save Social settings')
 
       toast({ title: "Success", description: "All settings saved successfully" })
     } catch (error: any) {
@@ -265,6 +290,59 @@ export default function AdminSettings() {
               <p className="text-sm text-yellow-700">⚠️ WhatsApp button will not show until you add a phone number.</p>
             </div>
           )}
+
+          <div className="flex justify-end pt-4 border-t">
+            <Button onClick={handleSave} disabled={isSaving}>
+              <Save className="h-4 w-4 mr-2" />{isSaving ? "Saving..." : "Save All Settings"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+      {/* Social Links Settings Card */}
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Share2 className="h-5 w-5 text-blue-500" /> Social Media Links</CardTitle>
+          <CardDescription>Configure social media URLs. If left blank, the corresponding icon will not show in the footer.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-4 bg-muted/50 rounded-lg">
+              <label className="text-sm font-medium block mb-2">Instagram Link</label>
+              <Input
+                type="text"
+                placeholder="https://instagram.com/yourprofile"
+                value={socialSettings.instagram}
+                onChange={(e) => setSocialSettings(prev => ({ ...prev, instagram: e.target.value }))}
+              />
+            </div>
+            <div className="p-4 bg-muted/50 rounded-lg">
+              <label className="text-sm font-medium block mb-2">Facebook Link</label>
+              <Input
+                type="text"
+                placeholder="https://facebook.com/yourpage"
+                value={socialSettings.facebook}
+                onChange={(e) => setSocialSettings(prev => ({ ...prev, facebook: e.target.value }))}
+              />
+            </div>
+            <div className="p-4 bg-muted/50 rounded-lg">
+              <label className="text-sm font-medium block mb-2">Twitter Link</label>
+              <Input
+                type="text"
+                placeholder="https://twitter.com/yourhandle"
+                value={socialSettings.twitter}
+                onChange={(e) => setSocialSettings(prev => ({ ...prev, twitter: e.target.value }))}
+              />
+            </div>
+            <div className="p-4 bg-muted/50 rounded-lg">
+              <label className="text-sm font-medium block mb-2">YouTube Link</label>
+              <Input
+                type="text"
+                placeholder="https://youtube.com/c/yourchannel"
+                value={socialSettings.youtube}
+                onChange={(e) => setSocialSettings(prev => ({ ...prev, youtube: e.target.value }))}
+              />
+            </div>
+          </div>
 
           <div className="flex justify-end pt-4 border-t">
             <Button onClick={handleSave} disabled={isSaving}>

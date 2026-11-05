@@ -14,6 +14,7 @@ import { Separator } from "@/components/ui/separator"
 import { Checkbox } from "@/components/ui/checkbox"
 import { getCurrentUser, getAuthToken } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
+import { useCouponRecheck } from "@/hooks/use-coupon-recheck"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
 
@@ -111,8 +112,9 @@ export default function CheckoutPage() {
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const discount = appliedCoupon?.discount || 0
   const shippingCost = subtotal >= shippingSettings.free_delivery_minimum ? 0 : shippingSettings.delivery_charge
-  const tax = Math.round((subtotal - discount) * 0.04)
+  const tax = 0
   const total = subtotal - discount + shippingCost + tax
+  useCouponRecheck(appliedCoupon, subtotal, setAppliedCoupon)
 
   const applyCoupon = async () => {
     if (!couponCode.trim()) return
@@ -131,6 +133,16 @@ export default function CheckoutPage() {
     } catch (error: any) {
       toast({ title: "Invalid Coupon", description: error.message, variant: "destructive" })
     }
+  }
+
+  // The server found a different total: show the customer the real prices before they pay
+  const applyServerPricing = (pricing: { prices: Record<string, number>, free_delivery_minimum: number, delivery_charge: number }) => {
+    const updated = cartItems.map((item) => ({ ...item, price: pricing.prices[String(item.id)] ?? item.price }))
+    setCartItems(updated)
+    localStorage.setItem("cart", JSON.stringify(updated))
+    setShippingSettings({ free_delivery_minimum: pricing.free_delivery_minimum, delivery_charge: pricing.delivery_charge })
+    toast({ title: "Prices Updated", description: "Please review your new total and try again." })
+    setIsProcessing(false)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -152,11 +164,12 @@ export default function CheckoutPage() {
         const paymentResponse = await fetch(`${API_BASE_URL}/api/payment/create-order`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ amount: total })
+          body: JSON.stringify({ items: cartItems, coupon_code: appliedCoupon?.code || null, expected_total: total })
         })
 
         if (!paymentResponse.ok) {
           const error = await paymentResponse.json()
+          if (paymentResponse.status === 409 && error.pricing) { applyServerPricing(error.pricing); return }
           throw new Error(error.detail || 'Failed to create payment order')
         }
 
@@ -178,7 +191,7 @@ export default function CheckoutPage() {
           key: paymentData.key_id,
           amount: paymentData.amount,
           currency: paymentData.currency,
-          name: 'Vurel',
+          name: 'In You',
           description: 'Order Payment',
           order_id: paymentData.order_id,
           handler: async function (response: any) {
@@ -198,7 +211,7 @@ export default function CheckoutPage() {
               if (!verifyData.verified) throw new Error('Payment verification failed')
 
               // Now place the order with payment_id
-              await placeOrder(response.razorpay_payment_id)
+              await placeOrder({ ...response, checkout_token: paymentData.checkout_token })
             } catch (err: any) {
               toast({ title: "Payment Failed", description: err.message, variant: "destructive" })
               setIsProcessing(false)
@@ -230,7 +243,7 @@ export default function CheckoutPage() {
     }
   }
 
-  const placeOrder = async (paymentId: string | null) => {
+  const placeOrder = async (payment: { razorpay_order_id: string, razorpay_payment_id: string, razorpay_signature: string, checkout_token: string } | null) => {
     try {
       const user = getCurrentUser()
       const shippingAddress = `${formData.address}, ${formData.city}, ${formData.state} ${formData.zip}, ${formData.country}`
@@ -241,12 +254,11 @@ export default function CheckoutPage() {
         customer_email: formData.email,
         customer_phone: formData.phone,
         items: cartItems,
-        total: total,
+        expected_total: total,
         shipping_address: shippingAddress,
-        payment_method: paymentMethod === "online" ? "razorpay" : "cod",
-        payment_id: paymentId,
-        coupon_id: appliedCoupon?.id || null,
-        discount: discount
+        payment_method: payment ? "razorpay" : "cod",
+        coupon_code: appliedCoupon?.code || null,
+        ...(payment || {})
       }
 
       const headers: Record<string, string> = { 'Content-Type': 'application/json' }
@@ -257,6 +269,7 @@ export default function CheckoutPage() {
       })
 
       const order = await response.json()
+      if (response.status === 409 && order.pricing) { applyServerPricing(order.pricing); return }
       if (!response.ok) throw new Error(order.detail || 'Failed to place order')
 
       // Clear cart and coupon
@@ -432,7 +445,7 @@ export default function CheckoutPage() {
                       <Image src={item.image || "/placeholder.svg"} alt={item.name} fill className="object-cover" />
                       {/* Watermark */}
                       <div className="absolute bottom-1 left-1 pointer-events-none">
-                        <span className="text-white/50 text-[6px] font-bold tracking-widest uppercase select-none" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>Vurel</span>
+                        <span className="text-white/50 text-[6px] font-bold tracking-widest uppercase select-none" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>In You</span>
                       </div>
                       <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center">{item.quantity}</span>
                     </div>
@@ -451,7 +464,6 @@ export default function CheckoutPage() {
                 <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span className="font-medium">₹{subtotal.toFixed(0)}</span></div>
                 {discount > 0 && <div className="flex justify-between text-green-600"><span>Discount</span><span>-₹{discount.toFixed(0)}</span></div>}
                 <div className="flex justify-between"><span className="text-muted-foreground">Shipping</span><span className={`font-medium ${shippingCost === 0 ? 'text-green-600' : ''}`}>{shippingCost === 0 ? 'Free' : `₹${shippingCost}`}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Tax</span><span className="font-medium">₹{tax}</span></div>
               </div>
 
               <Separator className="my-5" />

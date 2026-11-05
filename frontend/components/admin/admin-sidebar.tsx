@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, ChevronRight, Menu, X, FolderOpen, Layers, Image, Video, MessageSquare, ShoppingBag, Ticket, Star, CreditCard, Mail, Sparkles, Truck, KeyRound } from "lucide-react"
+import { LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, ChevronRight, Menu, X, FolderOpen, Layers, Image, Video, MessageSquare, ShoppingBag, Ticket, Star, CreditCard, Mail, Sparkles, Truck, KeyRound, FileText } from "lucide-react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { authAPI } from "@/lib/api"
@@ -14,6 +14,7 @@ const menuItems = [
   { icon: ShoppingCart, label: "Orders", href: "/admin/orders" },
   { icon: CreditCard, label: "Transactions", href: "/admin/transactions" },
   { icon: Users, label: "Customers", href: "/admin/customers" },
+  { icon: FileText, label: "Blogs", href: "/admin/blogs" },
   { icon: Ticket, label: "Coupons", href: "/admin/coupons" },
   { icon: Star, label: "Reviews", href: "/admin/reviews" },
   { icon: Mail, label: "Contacts", href: "/admin/contacts" },

@@ -6,6 +6,7 @@ import Link from "next/link"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Product } from "@/lib/api"
+import { ProductRating } from "@/components/product/product-rating"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
 
@@ -106,7 +107,6 @@ export function ProductCarousel() {
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {products.map((product) => {
-            const rating = 3.5 + ((product.id * 7 + 3) % 15) / 10
             return (
               <Link
                 key={product.id}
@@ -158,20 +158,7 @@ export function ProductCarousel() {
                       )}
                     </div>
                     {/* Star Ratings */}
-                    <div className="flex items-center justify-center gap-1.5">
-                      <div className="flex gap-0.5">
-                        {[1, 2, 3, 4, 5].map((star) => {
-                          const filled = star <= Math.floor(rating)
-                          const half = !filled && star === Math.ceil(rating) && rating % 1 >= 0.3
-                          return (
-                            <svg key={star} className={`w-3 h-3 ${filled ? 'fill-[#D8B4A0] text-[#D8B4A0]' : half ? 'fill-[#D8B4A0]/50 text-[#D8B4A0]' : 'fill-transparent text-[#D8B4A0]/40'}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
-                          )
-                        })}
-                      </div>
-                      <span className="text-[10px] text-[#6B635E] tracking-wider" style={{ fontFamily: "var(--font-body)" }}>
-                        {rating.toFixed(1)}
-                      </span>
-                    </div>
+                    <ProductRating average={product.rating_average} count={product.review_count} />
                   </div>
                 </div>
               </Link>

@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator"
 import { getCurrentUser } from "@/lib/api"
 import { AuthModal } from "@/components/auth/auth-modal"
 import { useToast } from "@/hooks/use-toast"
+import { useCouponRecheck } from "@/hooks/use-coupon-recheck"
 
 interface CartItem {
   id: number
@@ -75,8 +76,9 @@ export default function CartPage() {
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const discount = appliedCoupon?.discount || 0
   const shippingCost = subtotal >= shippingSettings.free_delivery_minimum ? 0 : shippingSettings.delivery_charge
-  const tax = Math.round((subtotal - discount) * 0.04)
+  const tax = 0
   const total = subtotal - discount + shippingCost + tax
+  useCouponRecheck(appliedCoupon, subtotal, setAppliedCoupon)
 
   const applyPromo = async () => {
     if (!promoCode.trim()) return
@@ -342,10 +344,6 @@ export default function CartPage() {
                   <div className="flex justify-between text-sm uppercase tracking-wider">
                     <span>Shipping</span>
                     <span className={`font-medium ${shippingCost === 0 ? 'text-[#D8B4A0]' : 'text-[#1C1615]'}`}>{shippingCost === 0 ? 'Complimentary' : `₹${shippingCost}`}</span>
-                  </div>
-                  <div className="flex justify-between text-sm uppercase tracking-wider">
-                    <span>Tax</span>
-                    <span className="font-medium text-[#1C1615]">₹{tax}</span>
                   </div>
                 </div>
 

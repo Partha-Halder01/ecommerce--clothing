@@ -104,21 +104,21 @@ export default function CategoriesPage() {
 
             {/* Luxury Hero Banner — same as Shop page */}
             <section className="relative h-[30vh] sm:h-[40vh] overflow-hidden bg-[#1C1615]">
-                <div className="absolute inset-0 opacity-50 mix-blend-luminosity">
+                <div className="absolute inset-0 opacity-80">
                     <img
-                        src="https://images.unsplash.com/photo-1615634260167-c8cdede054de?q=80&w=2000&auto=format&fit=crop"
+                        src="/images/banner-categories.jpg"
                         alt="Categories Banner"
                         className="w-full h-full object-cover object-center"
                     />
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-b from-[#1C1615]/90 via-[#1C1615]/40 to-[#1C1615]/90" />
+                <div className="absolute inset-0 bg-black/35" />
                 <div className="relative h-full container mx-auto px-4 flex flex-col items-center justify-center text-center">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, ease: "easeOut" }}
                     >
-                        <h1 className="text-4xl sm:text-5xl lg:text-7xl font-light mb-4 text-[#FCFBF8] tracking-widest uppercase" style={{ fontFamily: "var(--font-playfair)" }}>The Categories</h1>
+                        <h1 className="text-4xl sm:text-5xl lg:text-7xl font-light mb-4 text-[#FCFBF8] tracking-widest uppercase" style={{ fontFamily: "var(--font-playfair)" }}>Categories</h1>
                         <p className="text-xs sm:text-sm text-[#D8B4A0] max-w-lg mx-auto uppercase tracking-[0.3em]" style={{ fontFamily: "var(--font-body)" }}>
                             Discover our curated families of exquisite fragrances
                         </p>
@@ -152,9 +152,9 @@ export default function CategoriesPage() {
                                 const bgImage = category.image_url || fallbackImages[index % fallbackImages.length]
 
                                 return (
-                                    <motion.div key={category.id} variants={fadeInUp}>
-                                        <Link href={`/category/${category.slug || encodeURIComponent(category.name)}`} className="group block">
-                                            <div className="border border-[#E8E3DC] hover:border-[#D8B4A0]/50 transition-all duration-700 hover:shadow-[0_12px_40px_rgba(216,180,160,0.15)] overflow-hidden bg-[#FCFBF8]">
+                                    <motion.div key={category.id} variants={fadeInUp} className="h-full">
+                                        <Link href={`/category/${category.slug || encodeURIComponent(category.name)}`} className="group block h-full">
+                                            <div className="border border-[#E8E3DC] hover:border-[#D8B4A0]/50 transition-all duration-700 hover:shadow-[0_12px_40px_rgba(216,180,160,0.15)] overflow-hidden bg-[#FCFBF8] flex flex-col h-full">
                                                 {/* Image */}
                                                 <div className="relative aspect-[4/5] overflow-hidden">
                                                     <img
@@ -185,7 +185,7 @@ export default function CategoriesPage() {
                                                 </div>
 
                                                 {/* Text content */}
-                                                <div className="p-6 sm:p-8 text-center border-t border-[#E8E3DC]">
+                                                <div className="p-6 sm:p-8 text-center border-t border-[#E8E3DC] min-h-[140px] flex flex-col justify-center items-center flex-grow">
                                                     <h3 className="text-lg sm:text-xl font-light text-[#1C1615] uppercase tracking-[0.12em] mb-2 group-hover:text-[#D8B4A0] transition-colors duration-500" style={{ fontFamily: "var(--font-playfair)" }}>
                                                         {category.name}
                                                     </h3>

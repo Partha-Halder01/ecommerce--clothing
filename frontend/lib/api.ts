@@ -41,6 +41,8 @@ export interface Product {
   video_url?: string
   is_featured?: boolean
   theme?: string
+  rating_average?: number
+  review_count?: number
   created_at: string
 }
 
@@ -512,6 +514,65 @@ export const shiprocketAPI = {
   },
   cancelOrder: async (sr_order_id: number): Promise<any> => {
     return apiRequest<any>("/api/admin/shiprocket/orders/cancel", { method: "POST", body: JSON.stringify({ sr_order_id }) })
+  },
+}
+
+// Blogs API
+export interface Blog {
+  id: number
+  title: string
+  slug: string
+  content: string
+  summary?: string
+  image_url?: string
+  author: string
+  is_published: boolean
+  created_at: string
+  updated_at: string
+}
+
+export const blogsAPI = {
+  getAll: async (): Promise<Blog[]> => {
+    return apiRequest<Blog[]>("/api/blogs")
+  },
+
+  getBySlug: async (slug: string): Promise<Blog> => {
+    return apiRequest<Blog>(`/api/blogs/slug/${slug}`)
+  },
+
+  getById: async (id: number): Promise<Blog> => {
+    return apiRequest<Blog>(`/api/blogs/${id}`)
+  },
+
+  adminGetAll: async (): Promise<Blog[]> => {
+    return apiRequest<Blog[]>("/api/admin/blogs")
+  },
+
+  create: async (data: {
+    title: string
+    content: string
+    summary?: string
+    image_url?: string
+    author?: string
+    is_published?: boolean
+  }): Promise<Blog> => {
+    return apiRequest<Blog>("/api/admin/blogs", {
+      method: "POST",
+      body: JSON.stringify(data),
+    })
+  },
+
+  update: async (id: number, data: Partial<Blog>): Promise<Blog> => {
+    return apiRequest<Blog>(`/api/admin/blogs/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    })
+  },
+
+  delete: async (id: number): Promise<void> => {
+    return apiRequest<void>(`/api/admin/blogs/${id}`, {
+      method: "DELETE",
+    })
   },
 }
 

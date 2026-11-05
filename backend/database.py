@@ -254,6 +254,7 @@ def init_database():
                 discount_type ENUM('percentage', 'fixed') DEFAULT 'percentage',
                 discount_value DECIMAL(10, 2) NOT NULL,
                 min_order_amount DECIMAL(10, 2) DEFAULT 0,
+                max_order_amount DECIMAL(10, 2) DEFAULT NULL,
                 max_uses INT DEFAULT NULL,
                 used_count INT DEFAULT 0,
                 expires_at TIMESTAMP NULL,
@@ -292,11 +293,31 @@ def init_database():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
+
+        # Create blogs table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS blogs (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                title VARCHAR(255) NOT NULL,
+                slug VARCHAR(255) UNIQUE NOT NULL,
+                content TEXT NOT NULL,
+                summary TEXT NULL,
+                image_url VARCHAR(500) NULL,
+                author VARCHAR(100) DEFAULT 'Admin',
+                is_published BOOLEAN DEFAULT TRUE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )
+        """)
         
         # Insert default settings
         cursor.execute("""
             INSERT IGNORE INTO site_settings (setting_key, setting_value) VALUES 
             ('sale_banner', '{"enabled": true, "text": "LIMITED TIME OFFER - UP TO 20% OFF SIGNATURE SCENTS", "end_date": "2026-12-31T23:59:59"}')
+        """)
+        cursor.execute("""
+            INSERT IGNORE INTO site_settings (setting_key, setting_value) VALUES 
+            ('social_links', '{"instagram": "https://instagram.com/inyou.fragrances", "facebook": "https://facebook.com/inyou.fragrances", "twitter": "", "youtube": ""}')
         """)
         cursor.execute("""
             INSERT IGNORE INTO site_settings (setting_key, setting_value) VALUES 

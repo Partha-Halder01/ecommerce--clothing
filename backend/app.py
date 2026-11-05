@@ -6,6 +6,8 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from functools import wraps
 import jwt
+import hashlib
+import json
 import os
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
@@ -63,10 +65,14 @@ from models import (
     create_otp, verify_otp, set_user_verified, create_user_unverified,
     # Coupons
     create_coupon, get_all_coupons, get_coupon_by_code, validate_coupon, use_coupon, update_coupon, delete_coupon,
+    # Order pricing
+    OrderPricingError, build_order_items, price_order, check_expected_total, get_order_id_by_payment_id, get_setting,
     # Reviews
     create_review, get_product_reviews, get_all_reviews, verify_review, delete_review, get_product_rating,
     # Contact Submissions
-    create_contact, get_all_contacts, get_contact_by_id, update_contact_status, delete_contact
+    create_contact, get_all_contacts, get_contact_by_id, update_contact_status, delete_contact,
+    # Blogs
+    create_blog, get_all_blogs, get_blog_by_id, get_blog_by_slug, update_blog, delete_blog
 )
 
 # Initialize Flask app
@@ -700,14 +706,82 @@ def get_public_collection_products(collection_id):
 
 # ==================== USER ORDER ROUTES ====================
 
+# ==================== ORDER PRICING HELPERS ====================
+
+# A separate key means a checkout token can never be used as a login token
+CHECKOUT_TOKEN_SECRET = f"{JWT_SECRET}:checkout"
+
+def _cart_fingerprint(items):
+    """Identify what's in a cart: which products and how many"""
+    lines = sorted((int(item['id']), int(item['quantity'])) for item in items)
+    return hashlib.sha256(json.dumps(lines).encode('utf-8')).hexdigest()
+
+def _pricing_error_response(error):
+    body = {'detail': error.message}
+    if error.pricing:
+        body['pricing'] = error.pricing
+    return jsonify(body), error.status
+
+def _resolve_paid_order(data):
+    """Confirm a real Razorpay payment for this exact cart, and return what it paid for.
+
+    The total comes from the signed checkout token made before payment, so a customer
+    who has already paid isn't rejected if a price or coupon changes in the meantime.
+    """
+    razorpay_order_id = data.get('razorpay_order_id')
+    payment_id = data.get('razorpay_payment_id')
+    signature = data.get('razorpay_signature')
+    token = data.get('checkout_token')
+    if not all([razorpay_order_id, payment_id, signature, token]):
+        raise OrderPricingError("Payment details are missing. Please refresh the page and try again.")
+
+    try:
+        razorpay_client.utility.verify_payment_signature({
+            'razorpay_order_id': razorpay_order_id,
+            'razorpay_payment_id': payment_id,
+            'razorpay_signature': signature,
+        })
+    except razorpay.errors.SignatureVerificationError:
+        raise OrderPricingError("Payment could not be verified.")
+
+    try:
+        checkout = jwt.decode(token, CHECKOUT_TOKEN_SECRET, algorithms=['HS256'])
+    except jwt.InvalidTokenError:
+        raise OrderPricingError(f"Payment session is not valid. Please contact support with payment ID {payment_id}.")
+    if checkout.get('razorpay_order_id') != razorpay_order_id:
+        raise OrderPricingError(f"Payment session does not match. Please contact support with payment ID {payment_id}.")
+
+    if get_order_id_by_payment_id(payment_id):
+        raise OrderPricingError("This payment has already been used for an order.", status=409)
+
+    items = build_order_items(data.get('items'), require_active=False)
+    if _cart_fingerprint(items) != checkout.get('cart'):
+        raise OrderPricingError(f"Your cart does not match this payment. Please contact support with payment ID {payment_id}.")
+
+    return items, checkout['total'], checkout.get('coupon_id'), payment_id
+
 @app.route('/api/orders', methods=['POST'])
 def create_new_order():
     """Create a new order - supports both guests and logged-in users"""
     try:
         data = request.get_json()
         
-        if not data.get('items') or not data.get('total'):
-            return jsonify({'detail': 'Items and total are required'}), 400
+        if not data.get('items'):
+            return jsonify({'detail': 'Items are required'}), 400
+
+        # Prices, discounts and payment are decided here, never by the browser
+        try:
+            if data.get('payment_method') == 'razorpay':
+                order_items, order_total, coupon_id, payment_id = _resolve_paid_order(data)
+            else:
+                payment_settings = get_setting('payment_methods') or {}
+                if not payment_settings.get('cod_enabled', True):
+                    raise OrderPricingError("Cash on delivery is not available.")
+                pricing = price_order(data.get('items'), data.get('coupon_code'))
+                check_expected_total(pricing, data.get('expected_total'))
+                order_items, order_total, coupon_id, payment_id = pricing['items'], pricing['total'], pricing['coupon_id'], None
+        except OrderPricingError as error:
+            return _pricing_error_response(error)
         
         customer_id = None
         user = None
@@ -766,19 +840,19 @@ def create_new_order():
         # Create the order
         order_id = create_order(
             customer_id=customer_id,
-            items=data['items'],
-            total=data['total'],
+            items=order_items,
+            total=order_total,
             shipping_address=data.get('shipping_address'),
             payment_method=data.get('payment_method', 'COD'),
             customer_name=data.get('customer_name'),
             customer_email=data.get('customer_email'),
             customer_phone=data.get('customer_phone'),
-            payment_id=data.get('payment_id')
+            payment_id=payment_id
         )
         
         # Use coupon if provided
-        if data.get('coupon_id'):
-            use_coupon(data['coupon_id'])
+        if coupon_id:
+            use_coupon(coupon_id)
         
         order = get_order_by_id(order_id)
         
@@ -852,23 +926,36 @@ def create_razorpay_order():
     """Create a Razorpay order for online payment"""
     try:
         data = request.get_json()
-        amount = int(float(data.get('amount', 0)) * 100)  # Convert to paise
-        
+        pricing = price_order(data.get('items'), data.get('coupon_code'))
+        check_expected_total(pricing, data.get('expected_total'))
+        amount = int(round(pricing['total'] * 100))  # Convert to paise
+
         if amount < 100:  # Minimum INR 1
             return jsonify({'detail': 'Amount must be at least INR 1'}), 400
-        
+
         razorpay_order = razorpay_client.order.create({
             'amount': amount,
             'currency': 'INR',
             'payment_capture': 1
         })
-        
+
+        checkout_token = jwt.encode({
+            'razorpay_order_id': razorpay_order['id'],
+            'total': pricing['total'],
+            'coupon_id': pricing['coupon_id'],
+            'cart': _cart_fingerprint(pricing['items']),
+            'exp': datetime.utcnow() + timedelta(hours=24),
+        }, CHECKOUT_TOKEN_SECRET, algorithm='HS256')
+
         return jsonify({
             'order_id': razorpay_order['id'],
             'amount': amount,
             'currency': 'INR',
-            'key_id': os.getenv('RAZORPAY_KEY_ID')
+            'key_id': os.getenv('RAZORPAY_KEY_ID'),
+            'checkout_token': checkout_token
         })
+    except OrderPricingError as error:
+        return _pricing_error_response(error)
     except Exception as e:
         print(f"Razorpay order creation error: {e}")
         return jsonify({'detail': str(e)}), 500
@@ -1809,7 +1896,8 @@ def admin_create_coupon(current_user):
             data['discount_value'],
             data.get('min_order_amount', 0),
             data.get('max_uses'),
-            data.get('expires_at')
+            data.get('expires_at'),
+            data.get('max_order_amount')
         )
         return jsonify({'message': 'Coupon created', 'id': coupon_id}), 201
     except Exception as e:
@@ -2068,6 +2156,49 @@ def update_whatsapp_settings(current_user):
         print(f"Update WhatsApp settings error: {e}")
         return jsonify({'detail': str(e)}), 500
 
+# ==================== SOCIAL LINKS SETTINGS ====================
+
+@app.route('/api/settings/socials', methods=['GET'])
+def get_social_settings():
+    """Get social media links (public)"""
+    try:
+        from database import execute_query
+        result = execute_query("SELECT * FROM site_settings WHERE setting_key = 'social_links'", fetch_one=True)
+        if result:
+            import json
+            return jsonify(json.loads(result.get('setting_value', '{}')))
+        return jsonify({'instagram': '', 'facebook': '', 'twitter': '', 'youtube': ''})
+    except Exception as e:
+        return jsonify({'instagram': '', 'facebook': '', 'twitter': '', 'youtube': ''})
+
+@app.route('/api/admin/settings/socials', methods=['PUT'])
+@token_required
+@admin_required
+def update_social_settings(current_user):
+    """Update social media links"""
+    try:
+        from database import execute_query
+        import json
+        data = request.get_json()
+        settings_json = json.dumps({
+            'instagram': data.get('instagram', ''),
+            'facebook': data.get('facebook', ''),
+            'twitter': data.get('twitter', ''),
+            'youtube': data.get('youtube', '')
+        })
+        
+        # Check if setting exists
+        existing = execute_query("SELECT id FROM site_settings WHERE setting_key = 'social_links'", fetch_one=True)
+        if existing:
+            execute_query("UPDATE site_settings SET setting_value = %s WHERE setting_key = 'social_links'", (settings_json,))
+        else:
+            execute_query("INSERT INTO site_settings (setting_key, setting_value) VALUES ('social_links', %s)", (settings_json,))
+        
+        return jsonify({'message': 'Social settings updated'})
+    except Exception as e:
+        print(f"Update social settings error: {e}")
+        return jsonify({'detail': str(e)}), 500
+
 # ==================== HEALTH CHECK ====================
 
 @app.route('/', methods=['GET'])
@@ -2167,6 +2298,123 @@ def admin_delete_contact(current_user, contact_id):
         return jsonify({'message': 'Contact deleted successfully'})
     except Exception as e:
         print(f"Delete contact error: {e}")
+        return jsonify({'detail': str(e)}), 500
+
+# ==================== BLOG ROUTES ====================
+
+@app.route('/api/blogs', methods=['GET'])
+def get_blogs():
+    """Get all published blogs (public)"""
+    try:
+        blogs = get_all_blogs(published_only=True)
+        return jsonify(blogs)
+    except Exception as e:
+        print(f"Get blogs error: {e}")
+        return jsonify({'detail': str(e)}), 500
+
+@app.route('/api/blogs/<int:blog_id>', methods=['GET'])
+def get_blog(blog_id):
+    """Get a blog by ID"""
+    try:
+        blog = get_blog_by_id(blog_id)
+        if not blog:
+            return jsonify({'detail': 'Blog not found'}), 404
+        return jsonify(blog)
+    except Exception as e:
+        print(f"Get blog by ID error: {e}")
+        return jsonify({'detail': str(e)}), 500
+
+@app.route('/api/blogs/slug/<string:slug>', methods=['GET'])
+def get_blog_slug(slug):
+    """Get a blog by slug (public)"""
+    try:
+        blog = get_blog_by_slug(slug)
+        if not blog:
+            return jsonify({'detail': 'Blog not found'}), 404
+        return jsonify(blog)
+    except Exception as e:
+        print(f"Get blog by slug error: {e}")
+        return jsonify({'detail': str(e)}), 500
+
+@app.route('/api/admin/blogs', methods=['GET'])
+@token_required
+@admin_required
+def admin_get_blogs(current_user):
+    """Get all blogs including unpublished (admin)"""
+    try:
+        blogs = get_all_blogs(published_only=False)
+        return jsonify(blogs)
+    except Exception as e:
+        print(f"Admin get blogs error: {e}")
+        return jsonify({'detail': str(e)}), 500
+
+@app.route('/api/admin/blogs', methods=['POST'])
+@token_required
+@admin_required
+def admin_create_blog(current_user):
+    """Create a new blog post (admin)"""
+    try:
+        data = request.get_json()
+        if not data.get('title') or not data.get('content'):
+            return jsonify({'detail': 'Title and Content are required'}), 400
+            
+        blog_id = create_blog(
+            title=data['title'],
+            content=data['content'],
+            summary=data.get('summary'),
+            image_url=data.get('image_url'),
+            author=data.get('author', 'Admin'),
+            is_published=data.get('is_published', True)
+        )
+        blog = get_blog_by_id(blog_id)
+        return jsonify(blog), 201
+    except Exception as e:
+        print(f"Create blog error: {e}")
+        return jsonify({'detail': str(e)}), 500
+
+@app.route('/api/admin/blogs/<int:blog_id>', methods=['PUT'])
+@token_required
+@admin_required
+def admin_update_blog(current_user, blog_id):
+    """Update a blog post (admin)"""
+    try:
+        data = request.get_json()
+        # Check if exists
+        existing = get_blog_by_id(blog_id)
+        if not existing:
+            return jsonify({'detail': 'Blog not found'}), 404
+            
+        update_blog(
+            blog_id,
+            title=data.get('title'),
+            slug=data.get('slug'),
+            content=data.get('content'),
+            summary=data.get('summary'),
+            image_url=data.get('image_url'),
+            author=data.get('author'),
+            is_published=data.get('is_published')
+        )
+        blog = get_blog_by_id(blog_id)
+        return jsonify(blog)
+    except Exception as e:
+        print(f"Update blog error: {e}")
+        return jsonify({'detail': str(e)}), 500
+
+@app.route('/api/admin/blogs/<int:blog_id>', methods=['DELETE'])
+@token_required
+@admin_required
+def admin_delete_blog(current_user, blog_id):
+    """Delete a blog post (admin)"""
+    try:
+        # Check if exists
+        existing = get_blog_by_id(blog_id)
+        if not existing:
+            return jsonify({'detail': 'Blog not found'}), 404
+            
+        delete_blog(blog_id)
+        return jsonify({'message': 'Blog deleted successfully'})
+    except Exception as e:
+        print(f"Delete blog error: {e}")
         return jsonify({'detail': str(e)}), 500
 
 # ==================== MAIN ====================

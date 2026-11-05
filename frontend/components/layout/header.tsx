@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from "framer-motion"
 const navLinks = [
   { href: "/shop", label: "Shop All" },
   { href: "/categories", label: "Categories" },
+  { href: "/blogs", label: "Journal" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ]
@@ -22,6 +23,7 @@ export function Header() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+
 
   const updateCartCount = useCallback(() => {
     try {
@@ -90,10 +92,13 @@ export function Header() {
   return (
     <>
       <header
-        className={`sticky top-0 z-50 w-full transition-all duration-500 ${scrolled
-          ? "bg-[#1C1615]/95 backdrop-blur-md shadow-lg border-b border-[#D8B4A0]/10"
-          : "bg-[#1C1615] border-b border-[#D8B4A0]/10"
-          }`}
+        className={`z-50 w-full transition-all duration-500 ${
+          pathname === "/" && !scrolled
+            ? "absolute top-0 bg-transparent border-transparent"
+            : scrolled
+            ? "fixed top-0 bg-[#1C1615]/95 backdrop-blur-md shadow-lg border-b border-[#D8B4A0]/10"
+            : "sticky top-0 bg-[#1C1615] border-b border-[#D8B4A0]/10"
+        }`}
       >
         <div className="container mx-auto flex h-16 sm:h-[72px] items-center justify-between px-4 lg:px-8">
           {/* Left Navigation - Desktop */}

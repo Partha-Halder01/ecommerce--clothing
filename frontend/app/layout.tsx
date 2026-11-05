@@ -4,6 +4,7 @@ import { Cormorant_Garamond, Montserrat } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/toaster"
 import { FloatingButtons } from "@/components/layout/floating-buttons"
+import Script from "next/script"
 import "./globals.css"
 
 const cormorantGaramond = Cormorant_Garamond({
@@ -129,6 +130,23 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" data-scroll-behavior="smooth">
+      <head>
+        {/* Google Analytics */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-PP284QTKQF"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-PP284QTKQF', {
+              page_path: window.location.pathname,
+            });
+          `}
+        </Script>
+      </head>
       <body className={`${cormorantGaramond.variable} ${montserrat.variable} font-sans antialiased bg-[#FCFBF8]`}>
         {children}
         <FloatingButtons />

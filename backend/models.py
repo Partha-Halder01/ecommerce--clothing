@@ -161,6 +161,20 @@ def create_product(name, category, price, stock, description=None, image_url=Non
     product_id = execute_query(query, (name, slug, description, category, price, original_price, stock, status, image_url, colors_json, sizes_json, gallery_json, video_url, is_featured, faqs_json, related_json, theme))
     return product_id
 
+def _attach_ratings(products):
+    """Add the real rating (approved reviews only) to each product in a list"""
+    rows = execute_query(
+        "SELECT product_id, AVG(rating) AS avg_rating, COUNT(*) AS review_count "
+        "FROM reviews WHERE is_verified = TRUE GROUP BY product_id",
+        fetch_all=True
+    )
+    ratings = {row['product_id']: row for row in rows}
+    for product in products:
+        row = ratings.get(product['id'])
+        product['rating_average'] = round(float(row['avg_rating']), 1) if row else 0
+        product['review_count'] = row['review_count'] if row else 0
+    return products
+
 def get_all_products():
     """Get all products"""
     query = "SELECT * FROM products ORDER BY created_at DESC"
@@ -182,7 +196,7 @@ def get_all_products():
             product['faqs'] = json.loads(product['faqs'])
         if product.get('related_products') and isinstance(product['related_products'], str):
             product['related_products'] = json.loads(product['related_products'])
-    return result
+    return _attach_ratings(result)
 
 def get_product_by_id(product_id):
     """Get a product by ID"""
@@ -697,7 +711,7 @@ def get_featured_products():
             product['sizes'] = json.loads(product['sizes'])
         if product.get('gallery_images') and isinstance(product['gallery_images'], str):
             product['gallery_images'] = json.loads(product['gallery_images'])
-    return result
+    return _attach_ratings(result)
 
 def set_product_featured(product_id, is_featured):
     """Set product featured status"""
@@ -800,7 +814,7 @@ def get_collection_products(collection_id):
             product['sizes'] = json.loads(product['sizes'])
         if product.get('gallery_images') and isinstance(product['gallery_images'], str):
             product['gallery_images'] = json.loads(product['gallery_images'])
-    return result
+    return _attach_ratings(result)
 
 def set_collection_products(collection_id, product_ids):
     """Set all products for a collection (replaces existing)"""
@@ -814,13 +828,13 @@ def set_collection_products(collection_id, product_ids):
 
 # ==================== COUPONS ====================
 
-def create_coupon(code, discount_type, discount_value, min_order_amount=0, max_uses=None, expires_at=None):
+def create_coupon(code, discount_type, discount_value, min_order_amount=0, max_uses=None, expires_at=None, max_order_amount=None):
     """Create a new coupon"""
     query = """
-        INSERT INTO coupons (code, discount_type, discount_value, min_order_amount, max_uses, expires_at)
-        VALUES (%s, %s, %s, %s, %s, %s)
+        INSERT INTO coupons (code, discount_type, discount_value, min_order_amount, max_uses, expires_at, max_order_amount)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
     """
-    return execute_query(query, (code.upper(), discount_type, discount_value, min_order_amount, max_uses, expires_at))
+    return execute_query(query, (code.upper(), discount_type, discount_value, min_order_amount, max_uses, expires_at, max_order_amount))
 
 def get_all_coupons():
     """Get all coupons"""
@@ -830,6 +844,8 @@ def get_all_coupons():
             coupon['discount_value'] = float(coupon['discount_value'])
         if coupon.get('min_order_amount'):
             coupon['min_order_amount'] = float(coupon['min_order_amount'])
+        if coupon.get('max_order_amount'):
+            coupon['max_order_amount'] = float(coupon['max_order_amount'])
     return result
 
 def get_coupon_by_code(code):
@@ -840,6 +856,8 @@ def get_coupon_by_code(code):
             result['discount_value'] = float(result['discount_value'])
         if result.get('min_order_amount'):
             result['min_order_amount'] = float(result['min_order_amount'])
+        if result.get('max_order_amount'):
+            result['max_order_amount'] = float(result['max_order_amount'])
     return result
 
 def validate_coupon(code, order_total):
@@ -860,7 +878,11 @@ def validate_coupon(code, order_total):
     
     # Check minimum order
     if order_total < coupon['min_order_amount']:
-        return None, f"Minimum order amount is ${coupon['min_order_amount']}"
+        return None, f"Minimum order amount is ₹{coupon['min_order_amount']:.0f}"
+    
+    # Check maximum order (empty means no limit)
+    if coupon.get('max_order_amount') and order_total > coupon['max_order_amount']:
+        return None, f"This coupon is only valid on orders up to ₹{coupon['max_order_amount']:.0f}"
     
     # Calculate discount
     if coupon['discount_type'] == 'percentage':
@@ -868,7 +890,94 @@ def validate_coupon(code, order_total):
     else:
         discount = coupon['discount_value']
     
-    return discount, coupon
+    return round(min(discount, order_total), 2), coupon
+
+# ==================== ORDER PRICING ====================
+
+class OrderPricingError(Exception):
+    """An order can't be priced; `pricing` tells the checkout page what changed."""
+    def __init__(self, message, status=400, pricing=None):
+        super().__init__(message)
+        self.message = message
+        self.status = status
+        self.pricing = pricing
+
+def build_order_items(items, require_active=True):
+    """Check cart lines and replace their prices with the real ones from the database"""
+    if not isinstance(items, list) or not items:
+        raise OrderPricingError("Your cart is empty. Please refresh the page and try again.")
+    built = []
+    for item in items:
+        try:
+            product_id = int(item['id'])
+            quantity = int(item['quantity'])
+            if quantity != float(item['quantity']) or not 1 <= quantity <= 1000:
+                raise ValueError
+        except (KeyError, TypeError, ValueError):
+            raise OrderPricingError("Your cart has an invalid item. Please refresh the page and try again.")
+        product = get_product_by_id(product_id)
+        if not product:
+            if require_active:
+                raise OrderPricingError("A product in your cart is no longer available.")
+            built.append({**item, 'id': product_id, 'quantity': quantity})
+            continue
+        if require_active and str(product.get('status', '')).lower() != 'active':
+            raise OrderPricingError(f"{product['name']} is no longer available.")
+        built.append({**item, 'id': product_id, 'quantity': quantity, 'name': product['name'], 'price': float(product['price'])})
+    return built
+
+def price_order(items, coupon_code=None):
+    """Work out an order's total from database prices, the coupon and shipping settings"""
+    built = build_order_items(items)
+    subtotal = round(sum(item['price'] * item['quantity'] for item in built), 2)
+
+    discount = 0
+    coupon_id = None
+    if coupon_code:
+        discount, result = validate_coupon(coupon_code, subtotal)
+        if discount is None:
+            raise OrderPricingError(result)
+        coupon_id = result['id']
+
+    shipping = get_setting('shipping_settings') or {'free_delivery_minimum': 800, 'delivery_charge': 85}
+    free_minimum = float(shipping.get('free_delivery_minimum', 800))
+    delivery_charge = float(shipping.get('delivery_charge', 85))
+    shipping_cost = 0 if subtotal >= free_minimum else delivery_charge
+
+    return {
+        'items': built,
+        'subtotal': subtotal,
+        'discount': discount,
+        'shipping': shipping_cost,
+        'total': round(subtotal - discount + shipping_cost, 2),
+        'coupon_id': coupon_id,
+        'free_delivery_minimum': free_minimum,
+        'delivery_charge': delivery_charge,
+    }
+
+def check_expected_total(pricing, expected_total):
+    """Stop if the customer was shown a different total from the real one"""
+    if expected_total is None:
+        return
+    try:
+        matches = abs(float(expected_total) - pricing['total']) <= 0.01
+    except (TypeError, ValueError):
+        matches = False
+    if not matches:
+        raise OrderPricingError(
+            "Prices have changed. Please review your new total and try again.",
+            status=409,
+            pricing={
+                'prices': {str(item['id']): item['price'] for item in pricing['items']},
+                'free_delivery_minimum': pricing['free_delivery_minimum'],
+                'delivery_charge': pricing['delivery_charge'],
+            },
+        )
+
+def get_order_id_by_payment_id(payment_id):
+    """Find an order that already used this payment"""
+    row = execute_query("SELECT id FROM orders WHERE payment_id = %s", (payment_id,), fetch_one=True)
+    return row['id'] if row else None
 
 def use_coupon(coupon_id):
     """Increment coupon usage count"""
@@ -879,7 +988,7 @@ def update_coupon(coupon_id, **kwargs):
     fields = []
     values = []
     for key, value in kwargs.items():
-        if key in ['code', 'discount_type', 'discount_value', 'min_order_amount', 'max_uses', 'expires_at', 'is_active']:
+        if key in ['code', 'discount_type', 'discount_value', 'min_order_amount', 'max_order_amount', 'max_uses', 'expires_at', 'is_active']:
             fields.append(f"{key} = %s")
             values.append(value.upper() if key == 'code' else value)
     if fields:
@@ -972,4 +1081,69 @@ def update_contact_status(contact_id, status):
 def delete_contact(contact_id):
     """Delete a contact submission"""
     execute_query("DELETE FROM contact_submissions WHERE id = %s", (contact_id,))
+    return True
+
+# ==================== BLOGS MODEL ====================
+
+def create_blog(title, content, summary=None, image_url=None, author='Admin', is_published=True, slug=None):
+    """Create a new blog post"""
+    if not slug:
+        import re
+        slug = title.lower()
+        slug = re.sub(r'[^\w\s-]', '', slug)
+        slug = re.sub(r'[\s_-]+', '-', slug).strip('-')
+    
+    # Check if slug already exists, and append number if it does
+    original_slug = slug
+    counter = 1
+    while True:
+        existing = execute_query("SELECT id FROM blogs WHERE slug = %s", (slug,), fetch_one=True)
+        if not existing:
+            break
+        slug = f"{original_slug}-{counter}"
+        counter += 1
+
+    query = """
+        INSERT INTO blogs (title, slug, content, summary, image_url, author, is_published)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
+    """
+    return execute_query(query, (title, slug, content, summary, image_url, author, is_published))
+
+def get_all_blogs(published_only=False):
+    """Get all blog posts"""
+    if published_only:
+        query = "SELECT * FROM blogs WHERE is_published = TRUE ORDER BY created_at DESC"
+    else:
+        query = "SELECT * FROM blogs ORDER BY created_at DESC"
+    return execute_query(query, fetch_all=True)
+
+def get_blog_by_id(blog_id):
+    """Get a blog post by ID"""
+    query = "SELECT * FROM blogs WHERE id = %s"
+    return execute_query(query, (blog_id,), fetch_one=True)
+
+def get_blog_by_slug(slug):
+    """Get a blog post by slug"""
+    query = "SELECT * FROM blogs WHERE slug = %s"
+    return execute_query(query, (slug,), fetch_one=True)
+
+def update_blog(blog_id, **kwargs):
+    """Update a blog post"""
+    fields = []
+    values = []
+    allowed_fields = ['title', 'slug', 'content', 'summary', 'image_url', 'author', 'is_published']
+    for key, value in kwargs.items():
+        if key in allowed_fields and value is not None:
+            fields.append(f"{key} = %s")
+            values.append(value)
+    if fields:
+        values.append(blog_id)
+        query = f"UPDATE blogs SET {', '.join(fields)} WHERE id = %s"
+        execute_query(query, tuple(values))
+        return True
+    return False
+
+def delete_blog(blog_id):
+    """Delete a blog post"""
+    execute_query("DELETE FROM blogs WHERE id = %s", (blog_id,))
     return True

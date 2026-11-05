@@ -6,7 +6,7 @@ import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { SaleTimer } from "@/components/home/sale-timer"
 import Link from "next/link"
-import { Star } from "lucide-react"
+import { ProductRating } from "@/components/product/product-rating"
 import { publicProductsAPI, Product } from "@/lib/api"
 import { motion } from "framer-motion"
 
@@ -76,23 +76,23 @@ export default function ShopPage() {
       <main>
         {/* Luxury Hero Banner */}
         <section className="relative h-[30vh] sm:h-[40vh] overflow-hidden bg-[#1C1615]">
-          <div className="absolute inset-0 opacity-50 mix-blend-luminosity">
+          <div className="absolute inset-0 opacity-80">
             <img
-              src="https://images.unsplash.com/photo-1594035910387-fea47794261f?q=80&w=2000&auto=format&fit=crop"
+              src="/images/banner-shop.jpg"
               alt="Shop Banner"
               className="w-full h-full object-cover object-center"
             />
           </div>
-          <div className="absolute inset-0 bg-gradient-to-b from-[#1C1615]/90 via-[#1C1615]/40 to-[#1C1615]/90" />
+          <div className="absolute inset-0 bg-black/35" />
           <div className="relative h-full container mx-auto px-4 flex flex-col items-center justify-center text-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
             >
-              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-light mb-4 text-[#FCFBF8] tracking-widest uppercase" style={{ fontFamily: "var(--font-playfair)" }}>The Boutique</h1>
+              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-light mb-4 text-[#FCFBF8] tracking-widest uppercase" style={{ fontFamily: "var(--font-playfair)" }}>Shop All</h1>
               <p className="text-xs sm:text-sm text-[#D8B4A0] max-w-lg mx-auto uppercase tracking-[0.3em]" style={{ fontFamily: "var(--font-body)" }}>
-                Discover our complete collection of timeless pieces
+                Discover our complete collection of luxury fragrances
               </p>
             </motion.div>
           </div>
@@ -127,13 +127,13 @@ export default function ShopPage() {
                 variants={containerVariants}
                 initial="hidden"
                 animate="show"
-                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 lg:gap-10 grid-flow-row-dense"
+                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 lg:gap-10 grid-flow-row-dense"
               >
                 {paginatedProducts.map((product) => (
                   <motion.div variants={itemVariants} key={product.id}>
                     <Link href={`/product/${product.slug}`} className="group block h-full">
                       <div className="bg-[#FCFBF8] h-full flex flex-col border border-[#D8B4A0]/30 hover:border-[#D8B4A0]/70 transition-all duration-500 hover:shadow-[0_8px_30px_rgba(216,180,160,0.15)]">
-                        <div className="relative aspect-[3/4] overflow-hidden bg-[#1C1615]/5">
+                        <div className="relative aspect-square overflow-hidden bg-[#1C1615]/5">
                           <img
                             src={product.image_url || "/placeholder.svg"}
                             alt={product.name}
@@ -181,24 +181,7 @@ export default function ShopPage() {
                               )}
                             </div>
                             {/* Star Ratings */}
-                            <div className="flex items-center justify-center gap-1.5 mt-3">
-                              <div className="flex gap-0.5">
-                                {[1, 2, 3, 4, 5].map((star) => {
-                                  const rating = 3.5 + ((product.id * 7 + 3) % 15) / 10
-                                  const filled = star <= Math.floor(rating)
-                                  const half = !filled && star === Math.ceil(rating) && rating % 1 >= 0.3
-                                  return (
-                                    <Star
-                                      key={star}
-                                      className={`w-3 h-3 ${filled ? 'fill-[#D8B4A0] text-[#D8B4A0]' : half ? 'fill-[#D8B4A0]/50 text-[#D8B4A0]' : 'fill-transparent text-[#D8B4A0]/40'}`}
-                                    />
-                                  )
-                                })}
-                              </div>
-                              <span className="text-[10px] text-[#6B635E] tracking-wider" style={{ fontFamily: "var(--font-body)" }}>
-                                {(3.5 + ((product.id * 7 + 3) % 15) / 10).toFixed(1)}
-                              </span>
-                            </div>
+                            <ProductRating average={product.rating_average} count={product.review_count} className="mt-3" />
                           </div>
                         </div>
                       </div>

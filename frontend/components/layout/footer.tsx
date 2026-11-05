@@ -7,10 +7,25 @@ import { getCurrentUser } from "@/lib/api"
 
 export function Footer() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [socials, setSocials] = useState({
+    instagram: '',
+    facebook: '',
+    twitter: '',
+    youtube: ''
+  })
 
   useEffect(() => {
     const user = getCurrentUser()
     setIsLoggedIn(!!user)
+
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/settings/socials`)
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data) {
+          setSocials(data)
+        }
+      })
+      .catch(() => {})
   }, [])
 
   return (
@@ -28,18 +43,26 @@ export function Footer() {
               </p>
             </div>
             <div className="flex gap-5">
-              <a href="#" className="w-10 h-10 border border-[#D8B4A0]/20 flex items-center justify-center text-[#FCFBF8]/40 hover:text-[#D8B4A0] hover:border-[#D8B4A0] transition-all duration-300">
-                <Instagram className="h-4 w-4" />
-              </a>
-              <a href="#" className="w-10 h-10 border border-[#D8B4A0]/20 flex items-center justify-center text-[#FCFBF8]/40 hover:text-[#D8B4A0] hover:border-[#D8B4A0] transition-all duration-300">
-                <Facebook className="h-4 w-4" />
-              </a>
-              <a href="#" className="w-10 h-10 border border-[#D8B4A0]/20 flex items-center justify-center text-[#FCFBF8]/40 hover:text-[#D8B4A0] hover:border-[#D8B4A0] transition-all duration-300">
-                <Twitter className="h-4 w-4" />
-              </a>
-              <a href="#" className="w-10 h-10 border border-[#D8B4A0]/20 flex items-center justify-center text-[#FCFBF8]/40 hover:text-[#D8B4A0] hover:border-[#D8B4A0] transition-all duration-300">
-                <Youtube className="h-4 w-4" />
-              </a>
+              {socials.instagram && (
+                <a href={socials.instagram} target="_blank" rel="noopener noreferrer" className="w-10 h-10 border border-[#D8B4A0]/20 flex items-center justify-center text-[#FCFBF8]/40 hover:text-[#D8B4A0] hover:border-[#D8B4A0] transition-all duration-300">
+                  <Instagram className="h-4 w-4" />
+                </a>
+              )}
+              {socials.facebook && (
+                <a href={socials.facebook} target="_blank" rel="noopener noreferrer" className="w-10 h-10 border border-[#D8B4A0]/20 flex items-center justify-center text-[#FCFBF8]/40 hover:text-[#D8B4A0] hover:border-[#D8B4A0] transition-all duration-300">
+                  <Facebook className="h-4 w-4" />
+                </a>
+              )}
+              {socials.twitter && (
+                <a href={socials.twitter} target="_blank" rel="noopener noreferrer" className="w-10 h-10 border border-[#D8B4A0]/20 flex items-center justify-center text-[#FCFBF8]/40 hover:text-[#D8B4A0] hover:border-[#D8B4A0] transition-all duration-300">
+                  <Twitter className="h-4 w-4" />
+                </a>
+              )}
+              {socials.youtube && (
+                <a href={socials.youtube} target="_blank" rel="noopener noreferrer" className="w-10 h-10 border border-[#D8B4A0]/20 flex items-center justify-center text-[#FCFBF8]/40 hover:text-[#D8B4A0] hover:border-[#D8B4A0] transition-all duration-300">
+                  <Youtube className="h-4 w-4" />
+                </a>
+              )}
             </div>
           </div>
         </div>
@@ -78,6 +101,7 @@ export function Footer() {
                 { href: "/", label: "Home" },
                 { href: "/shop", label: "Shop All" },
                 { href: "/categories", label: "Categories" },
+                { href: "/blogs", label: "Journal" },
                 { href: "/about", label: "About Us" },
                 { href: "/account", label: "My Account" },
               ].map((link) => (

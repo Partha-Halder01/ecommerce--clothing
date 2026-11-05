@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import Image from "next/image"
 import { settingsAPI, HeroSlide } from "@/lib/api"
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion"
 
@@ -69,7 +70,7 @@ export function HeroSlider() {
   if (slides.length === 0) return null
 
   return (
-    <section ref={containerRef} className="relative h-[85vh] lg:h-screen w-full overflow-hidden bg-[#1C1615]">
+    <section ref={containerRef} className="relative aspect-[16/9] md:aspect-auto h-auto md:h-screen w-full overflow-hidden bg-[#1C1615]">
       <AnimatePresence initial={false} mode="wait">
         <motion.div
           key={currentSlide}
@@ -79,13 +80,14 @@ export function HeroSlider() {
           transition={{ duration: 1.8, ease: "easeInOut" }}
           className="absolute inset-0"
         >
-          <motion.div style={{ y: bgY }} className="absolute inset-0 h-[120%] -top-[10%]">
-            <img
-              src={slides[currentSlide]?.image}
-              alt={slides[currentSlide]?.title}
-              fetchPriority="high"
-              decoding="async"
-              className="w-full h-full object-cover object-center brightness-90 saturate-50 transition-transform duration-[10s] ease-out hover:scale-105"
+          <motion.div style={{ y: bgY, willChange: "transform" }} className="absolute inset-0 h-[120%] -top-[10%]">
+            <Image
+              src={slides[currentSlide]?.image || "/placeholder.svg"}
+              alt={slides[currentSlide]?.title || "Hero Banner"}
+              fill
+              priority={currentSlide === 0}
+              sizes="100vw"
+              className="object-cover object-center brightness-90 saturate-50 transition-transform duration-[10s] ease-out hover:scale-105"
             />
           </motion.div>
 
@@ -93,10 +95,10 @@ export function HeroSlider() {
           <div className="absolute inset-0 bg-gradient-to-t from-[#1C1615]/80 via-transparent to-[#1C1615]/30 pointer-events-none" />
           <div className="absolute inset-0 bg-black/10 pointer-events-none" />
 
-          <div className="relative h-full container mx-auto px-6 sm:px-12 flex items-center justify-center sm:justify-start">
+          <div className="relative h-full container mx-auto px-4 sm:px-12 flex items-center justify-center sm:justify-start">
             <motion.div
-              className="max-w-2xl text-center sm:text-left mt-20 sm:mt-0"
-              style={{ y: textY, opacity: textOpacity }}
+              className="max-w-2xl text-center sm:text-left mt-6 sm:mt-0"
+              style={{ y: textY, opacity: textOpacity, willChange: "transform" }}
               initial={{ y: 50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 1.2, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
@@ -106,13 +108,13 @@ export function HeroSlider() {
                   initial={{ opacity: 0, letterSpacing: "0.1em" }}
                   animate={{ opacity: 1, letterSpacing: "0.4em" }}
                   transition={{ duration: 1.5, delay: 0.8 }}
-                  className="flex items-center justify-center sm:justify-start gap-4 mb-6"
+                  className="flex items-center justify-center sm:justify-start gap-2 sm:gap-4 mb-2 sm:mb-6"
                 >
-                  <div className="h-[1px] w-8 sm:w-16 bg-[#D8B4A0]"></div>
-                  <p className="text-xs sm:text-sm uppercase text-[#D8B4A0] font-medium" style={{ fontFamily: "var(--font-body)" }}>
+                  <div className="h-[1px] w-6 sm:w-16 bg-[#D8B4A0]"></div>
+                  <p className="text-[9px] sm:text-sm uppercase text-[#D8B4A0] font-medium tracking-[0.2em] sm:tracking-[0.4em]" style={{ fontFamily: "var(--font-body)" }}>
                     {slides[currentSlide].subtitle}
                   </p>
-                  <div className="h-[1px] w-8 sm:w-16 bg-[#D8B4A0] sm:hidden"></div>
+                  <div className="h-[1px] w-6 sm:w-16 bg-[#D8B4A0] sm:hidden"></div>
                 </motion.div>
               )}
               {slides[currentSlide]?.title && (
@@ -120,7 +122,7 @@ export function HeroSlider() {
                   initial={{ y: 30, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ duration: 1.2, delay: 1 }}
-                  className="text-5xl sm:text-6xl lg:text-7xl font-light leading-none text-[#FCFBF8] mb-6 uppercase tracking-widest drop-shadow-lg"
+                  className="text-xl sm:text-6xl lg:text-7xl font-light leading-none text-[#FCFBF8] mb-2 sm:mb-6 uppercase tracking-widest drop-shadow-lg"
                   style={{ fontFamily: 'var(--font-playfair)' }}
                 >
                   {slides[currentSlide].title}
@@ -131,7 +133,7 @@ export function HeroSlider() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 1.2, delay: 1.4 }}
-                  className="text-lg sm:text-xl text-[#E8E3DC] mb-12 max-w-lg mx-auto sm:mx-0 font-light tracking-wide leading-relaxed"
+                  className="text-xs sm:text-xl text-[#E8E3DC] mb-4 sm:mb-12 max-w-xs sm:max-w-lg mx-auto sm:mx-0 font-light tracking-wide leading-relaxed hidden sm:block"
                   style={{ fontFamily: "var(--font-body)" }}
                 >
                   {slides[currentSlide].description}
@@ -144,7 +146,7 @@ export function HeroSlider() {
                   transition={{ duration: 1, delay: 1.6 }}
                 >
                   <Link href={slides[currentSlide].href}>
-                    <Button className="bg-transparent border border-[#FCFBF8] text-[#FCFBF8] hover:bg-[#FCFBF8] hover:text-[#1C1615] px-10 py-6 uppercase tracking-[0.2em] text-xs font-semibold rounded-none transition-all duration-700">
+                    <Button className="bg-transparent border border-[#FCFBF8] text-[#FCFBF8] hover:bg-[#FCFBF8] hover:text-[#1C1615] px-4 py-2 sm:px-10 sm:py-6 uppercase tracking-[0.2em] text-[9px] sm:text-xs font-semibold rounded-none transition-all duration-700">
                       {slides[currentSlide].cta}
                     </Button>
                   </Link>
@@ -168,7 +170,7 @@ export function HeroSlider() {
       </div>
 
       {/* Mobile Dots */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-4 z-30 sm:hidden">
+      <div className="absolute bottom-3 sm:bottom-8 left-1/2 -translate-x-1/2 flex gap-4 z-30 sm:hidden">
         {slides.map((_, index) => (
           <button key={index} onClick={() => goToSlide(index)}
             className={`h-[2px] transition-all duration-500 ${index === currentSlide ? "w-12 bg-[#D8B4A0]" : "w-6 bg-white/30"}`} />
