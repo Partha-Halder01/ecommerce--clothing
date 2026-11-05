@@ -152,6 +152,7 @@ export function VideoCarousel() {
                     if (el) videoRefs.current.set(idx, el)
                   }}
                   className="w-full h-full object-cover"
+                  preload="metadata"
                   loop
                   muted
                   playsInline

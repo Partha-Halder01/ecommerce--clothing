@@ -237,7 +237,7 @@ export default function CategoryProductsPage() {
 
                                                     {/* Quick View CTA */}
                                                     <div className="absolute bottom-4 left-0 w-full text-center">
-                                                        <span className="inline-block text-[#FCFBF8] text-[9px] sm:text-[10px] font-medium tracking-[0.3em] uppercase opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0 border border-[#FCFBF8]/40 px-5 py-2 backdrop-blur-sm bg-[#1C1615]/20" style={{ fontFamily: "var(--font-body)" }}>
+                                                        <span className="inline-block text-[#FCFBF8] text-[9px] sm:text-[10px] font-medium tracking-[0.3em] uppercase opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0 border border-[#FCFBF8]/40 px-5 py-2 bg-[#1C1615]/20" style={{ fontFamily: "var(--font-body)" }}>
                                                             Quick View
                                                         </span>
                                                     </div>

@@ -157,10 +157,12 @@ export default function CategoriesPage() {
                                             <div className="border border-[#E8E3DC] hover:border-[#D8B4A0]/50 transition-all duration-700 hover:shadow-[0_12px_40px_rgba(216,180,160,0.15)] overflow-hidden bg-[#FCFBF8] flex flex-col h-full">
                                                 {/* Image */}
                                                 <div className="relative aspect-[4/5] overflow-hidden">
-                                                    <img
+                                                    <Image
                                                         src={bgImage}
                                                         alt={category.name}
-                                                        className="w-full h-full object-cover transition-all duration-[1.5s] ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100"
+                                                        fill
+                                                        sizes="(max-width: 768px) 100vw, 33vw"
+                                                        className="object-cover transition-[transform,opacity] duration-[1.5s] ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100"
                                                     />
                                                     {/* Gradient overlay */}
                                                     <div className="absolute inset-0 bg-gradient-to-t from-[#1C1615]/70 via-[#1C1615]/20 to-transparent" />

@@ -95,11 +95,12 @@ export function InfiniteCarousel() {
               className="group flex-shrink-0 w-[180px] sm:w-[220px] lg:w-[250px] mx-2 sm:mx-3"
             >
               <div className="relative aspect-[4/5] overflow-hidden rounded-none mb-4 shadow-lg border border-[#D8B4A0]/10 bg-[#FCFBF8]/5">
-                {/* Use base img tag for reliability */}
-                <img
+                <Image
                   src={product.image_url || "https://images.unsplash.com/photo-1594035910387-fea47794261f?q=80&w=600&auto=format&fit=crop"}
                   alt={product.name}
-                  className="w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100"
+                  fill
+                  sizes="(max-width: 640px) 180px, (max-width: 1024px) 220px, 250px"
+                  className="object-cover transition-transform duration-1000 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100"
                 />
                 {/* Overlay gradient */}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#1C1615]/80 via-transparent to-transparent opacity-60 group-hover:opacity-100 transition-opacity duration-500" />

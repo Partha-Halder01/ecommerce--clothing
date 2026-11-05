@@ -13,7 +13,7 @@ const defaultSlides: HeroSlide[] = [
     title: "Le Voyage",
     subtitle: "The Signature Collection",
     description: "An olfactory journey crafted from the world's most elusive absolutes.",
-    image: "https://images.unsplash.com/photo-1595166665792-747f3ae3df67?q=80&w=2000&auto=format&fit=crop",
+    image: "/images/perfumes/perfume_hero_banner_1772390798484.png",
     cta: "Discover the scent",
     href: "/shop"
   },
@@ -21,7 +21,7 @@ const defaultSlides: HeroSlide[] = [
     title: "Nocturne",
     subtitle: "Extrait de Parfum",
     description: "Deep, mysterious woody notes layered with midnight jasmine.",
-    image: "https://images.unsplash.com/photo-1615529188059-1959cebfef54?q=80&w=2000&auto=format&fit=crop",
+    image: "/images/perfumes/perfume_bottle_1_1772390817779.png",
     cta: "Acquire Limited Edition",
     href: "/shop"
   },
@@ -29,7 +29,7 @@ const defaultSlides: HeroSlide[] = [
     title: "Luminescence",
     subtitle: "Spring Arrival",
     description: "A cascade of bright citrus and rare white florals.",
-    image: "https://images.unsplash.com/photo-1622618991746-fe6008162edb?q=80&w=2000&auto=format&fit=crop",
+    image: "/images/perfumes/perfume_bottle_2_1772390832537.png",
     cta: "Shop Luminescence",
     href: "/shop"
   },

@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Image from "next/image"
 import { useParams } from "next/navigation"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
@@ -120,10 +121,12 @@ export default function ProductPageClient() {
                                     <motion.div variants={itemVariants} key={p.id}>
                                         <Link href={`/product/${p.slug}`} className="group block">
                                             <div className="relative aspect-[3/4] overflow-hidden mb-4 bg-[#FCFBF8]/5">
-                                                <img
+                                                <Image
                                                     src={p.image_url || "https://images.unsplash.com/photo-1594035910387-fea47794261f?q=80&w=800&auto=format&fit=crop"}
                                                     alt={p.name}
-                                                    className="w-full h-full object-cover transition-all duration-1000 ease-out group-hover:scale-110 opacity-80 group-hover:opacity-100"
+                                                    fill
+                                                    sizes="(max-width: 768px) 50vw, 25vw"
+                                                    className="object-cover transition-[transform,opacity] duration-1000 ease-out group-hover:scale-110 opacity-80 group-hover:opacity-100"
                                                 />
                                                 <div className="absolute inset-0 bg-gradient-to-t from-[#1C1615]/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                                                 <div className="absolute bottom-4 left-0 w-full text-center">

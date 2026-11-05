@@ -204,6 +204,7 @@ export function VideoSection() {
               <video
                 ref={videoRef}
                 className="w-full h-full object-cover"
+                preload="metadata"
                 loop
                 muted={isMuted}
                 playsInline

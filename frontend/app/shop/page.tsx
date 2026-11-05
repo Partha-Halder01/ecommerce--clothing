@@ -134,12 +134,12 @@ export default function ShopPage() {
                     <Link href={`/product/${product.slug}`} className="group block h-full">
                       <div className="bg-[#FCFBF8] h-full flex flex-col border border-[#D8B4A0]/30 hover:border-[#D8B4A0]/70 transition-all duration-500 hover:shadow-[0_8px_30px_rgba(216,180,160,0.15)]">
                         <div className="relative aspect-square overflow-hidden bg-[#1C1615]/5">
-                          <img
+                          <Image
                             src={product.image_url || "/placeholder.svg"}
                             alt={product.name}
-                            loading="lazy"
-                            onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/placeholder.svg" }}
-                            className="w-full h-full object-cover transition-all duration-[1.2s] ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100"
+                            fill
+                            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                            className="object-cover transition-[transform,opacity] duration-[1.2s] ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100"
                           />
                           {/* Gradient overlay */}
                           <div className="absolute inset-0 bg-gradient-to-t from-[#1C1615]/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -150,7 +150,7 @@ export default function ShopPage() {
 
                           {/* Quick View CTA */}
                           <div className="absolute bottom-4 left-0 w-full text-center">
-                            <span className="inline-block text-[#FCFBF8] text-[9px] sm:text-[10px] font-medium tracking-[0.3em] uppercase opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0 border border-[#FCFBF8]/40 px-5 py-2 backdrop-blur-sm bg-[#1C1615]/20" style={{ fontFamily: "var(--font-body)" }}>
+                            <span className="inline-block text-[#FCFBF8] text-[9px] sm:text-[10px] font-medium tracking-[0.3em] uppercase opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0 border border-[#FCFBF8]/40 px-5 py-2 bg-[#1C1615]/20" style={{ fontFamily: "var(--font-body)" }}>
                               Quick View
                             </span>
                           </div>
